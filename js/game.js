@@ -93,13 +93,42 @@ function BaseAction(gamemodel, name, description)
     self.name = name;
     self.description = description;
     
-    //Functions that overwrite themselves when called.
-    self.duration        = function (callback) { if(typeof(callback) === "function") self["duration"]       = callback; else throw new Error("Unimplemented function called in BaseAction " + self.name); return self; };
-    self.finish          = function (callback) { if(typeof(callback) === "function") self["finish"]         = callback; else throw new Error("Unimplemented function called in BaseAction " + self.name); return self; };
-    self.tick            = function (callback) { if(typeof(callback) === "function") self["tick"]           = callback; else throw new Error("Unimplemented function called in BaseAction " + self.name); return self; };
-    self.visible         = function (callback) { if(typeof(callback) === "function") self["visible"]        = callback; else throw new Error("Unimplemented function called in BaseAction " + self.name); return self; };
-    self.clickable       = function (callback) { if(typeof(callback) === "function") self["clickable"]      = callback; else throw new Error("Unimplemented function called in BaseAction " + self.name); return self; };
-    self.tickMultiplier  = function (callback) { if(typeof(callback) === "function") self["tickMultiplier"] = callback; else throw new Error("Unimplemented function called in BaseAction " + self.name); return self; };
+    //For storing some functions this object will hold
+    self._internals = {}
+
+    self.setOrRunFunction = function(name, callback)
+    {
+        if(typeof(callback) === "function")
+        {
+            self._internals[name] = callback;
+            return self;
+        }
+        var func = self._internals[name];
+        if(typeof(func) === "function")
+        {
+            return func(self);
+        }
+        throw new Error("Invalid use of function '" + name + "'")
+    }
+
+    self.indirection = function(name){
+        //This weird code here is so that the function has the right name in the end when put out to the console.
+        //Nessecary? No. Satisfying? Yeeees.
+        const tmp = {
+            [name]: (callback) => { return self.setOrRunFunction(name, callback); }
+        }
+        return tmp[name];
+    }
+
+    //Functions that are to be set on a object level, not constructor level.
+    self.duration       = self.indirection("duration");
+    self.finish         = self.indirection("finish");
+    self.tick           = self.indirection("tick");
+    self.visible        = self.indirection("visible");
+    self.clickable      = self.indirection("clickable");
+    self.tickMultiplier = self.indirection("tickMultiplier");
+
+    self.stats = {};
 
     self.addToPool = function()
     {
@@ -117,6 +146,7 @@ function Action(baseAction, amount)
     self.duration = baseAction.duration;
     self.gameModel = baseAction.gameModel;
 
+    self._internals = baseAction._internals;
 
     self.finish = baseAction.finish;
     self.tick = baseAction.tick;
@@ -124,6 +154,7 @@ function Action(baseAction, amount)
     self.clickable = baseAction.clickable;
     self.tickMultiplier = baseAction.tickMultiplier;
 
+    self.stats = baseAction.stats;
 
     self.maxAmount = ko.observable(amount);
     
@@ -498,6 +529,19 @@ function gameModel()
                 locked: ko.observable(true),
                 actions: ko.observableArray([
                     new BaseAction(self, "Leave Tavern", "Welp, off to the outside again!")
+                        .duration(function()
+                        {
+                            return 100;
+                        })
+                        .finish(function()
+                        {
+                            self.currentTownPlayerPawn = 0;
+                        })
+                        .tick(function() { })
+                        .visible(function() {return true})
+                        .clickable(function() {return true})
+                        .tickMultiplier(function() {return 1}),
+                    new BaseAction(self, "Talk to the drunks", "If you can even call that a conversation...")
                         .duration(function()
                         {
                             return 100;
