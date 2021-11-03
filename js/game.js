@@ -324,7 +324,7 @@ function gameModel()
                         })
                         .tickMultiplier(function()
                         {
-                            return logerithmic(self.getStatByName("Dexterity").value() * self.getStatByName("Perception").value())
+                            return 1
                         }),
                     new BaseAction(self, "Smash Pots", "Like a particular elf-boy")
                         .duration(function()
@@ -356,7 +356,7 @@ function gameModel()
                         })
                         .tickMultiplier(function()
                         {
-                            return logerithmic(self.getStatByName("Strength").value() * self.getStatByName("Constitution").value())
+                            return 1
                         }),
                     new BaseAction(self, "Loot Pockets", "You dirty thief!")
                         .duration(function()
@@ -386,7 +386,7 @@ function gameModel()
                         })
                         .tickMultiplier(function()
                         {
-                            return logerithmic(self.getStatByName("Intelligence").value() * self.getStatByName("Luck").value())
+                            return 1
                         }),
                     new BaseAction(self, "Buy Mana", "Can't do anything else with that money... Or can you?")
                         .duration(function()
