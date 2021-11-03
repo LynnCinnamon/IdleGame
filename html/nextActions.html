@@ -1,0 +1,18 @@
+<b>Next Actions</b>
+<div data-bind="foreach: nextActions()">
+    <div class="action-card">
+        <div class="block-container">
+            <div data-bind="text: name" style="margin-right: 10px;"></div>
+            <span class="noselect minus" data-bind="click: decrementAmount">-</span>
+            <div class="noselect input-display" data-bind="text: maxAmount()"></div>
+            <span class="noselect plus" data-bind="click: incrementAmount">+</span>
+        </div>
+        <div class="noselect clickable square-20" data-bind="visible: canMoveUp(), click: moveUp">
+            Λ
+        </div>
+        <div class="noselect clickable square-20" data-bind="visible: canMoveDown(), click: moveDown">
+            V
+        </div>
+        <div class="delete" data-bind="click: $root.removeNextAction">X</div>
+    </div>
+</div>

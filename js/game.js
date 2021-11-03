@@ -1,0 +1,799 @@
+//Helper functions
+
+
+var obs = {
+    increment: function(observable, amount)
+    {
+        observable(observable() + (amount || 1));
+    },
+}
+
+//From 0-100 -> 1-10
+var logerithmic = function(val)
+{
+    return ((14) / (1 + Math.exp(-0.003 * 14 * val) * (( 14 / 5 ) - 1) )) - 4
+}
+
+/**
+ * 
+ * @param {array} array 
+ * @param {string} keyname 
+ * @param {any} value 
+ */
+var get = function(array, keyname, value)
+{
+    return array.find(element => element[keyname] === value);
+}
+
+function getFuncName() {
+    return getFuncName.caller.name
+}
+
+var pushUnique = function(array, key)
+{
+    if(array().includes(key))
+        return
+    array.push(key);
+}
+
+/**
+ * 
+ * @param {gameModel} game 
+ * @param {string} name 
+ * @returns 
+ */
+var town = function(game, name)
+{
+    return get(game.world.towns, "name", name)
+}
+
+//GLOBAL VARS
+
+var validUnlockables = [
+    "FirstGold"
+]
+
+//Game logic
+
+function Stat(name)
+{
+    var self = this;
+    self.name = name
+    self.value = ko.observable(1);
+    self.valuePercentage = ko.observable(0);
+    self.metaValue = ko.observable(0)
+    self.metaValuePercentage = ko.observable(0);
+
+    self.incrementWithPower = function(power)
+    {
+        obs.increment(self.valuePercentage, power + power * self.metaValue() * 0.1)
+        obs.increment(self.metaValuePercentage, power * 0.1 / (self.metaValue() + 1))
+    }
+
+    self.handleOverflow = function()
+    {
+        while(self.metaValuePercentage() >= 100)
+        {
+            self.metaValuePercentage(self.metaValuePercentage() - 100);
+            obs.increment(self.metaValue)
+        }
+        while(self.valuePercentage() >= 100)
+        {
+            self.valuePercentage(self.valuePercentage() - 100);
+            obs.increment(self.value)
+        }
+    }
+}
+
+
+function BaseAction(gamemodel, name, description)
+{
+    var self = this;
+    self.gameModel = gamemodel;
+    self.name = name;
+    self.description = description;
+    
+    //Functions that overwrite themselves when called.
+    self.duration        = function (func) { if(typeof(func) === "function") self["duration"]       = func; else throw new Error("Unimplemented function called in BaseAction " + self.name); return self; };
+    self.finish          = function (func) { if(typeof(func) === "function") self["finish"]         = func; else throw new Error("Unimplemented function called in BaseAction " + self.name); return self; };
+    self.tick            = function (func) { if(typeof(func) === "function") self["tick"]           = func; else throw new Error("Unimplemented function called in BaseAction " + self.name); return self; };
+    self.visible         = function (func) { if(typeof(func) === "function") self["visible"]        = func; else throw new Error("Unimplemented function called in BaseAction " + self.name); return self; };
+    self.clickable       = function (func) { if(typeof(func) === "function") self["clickable"]      = func; else throw new Error("Unimplemented function called in BaseAction " + self.name); return self; };
+    self.tickMultiplier  = function (func) { if(typeof(func) === "function") self["tickMultiplier"] = func; else throw new Error("Unimplemented function called in BaseAction " + self.name); return self; };
+
+    self.addToPool = function()
+    {
+        gamemodel.nextActions.push(new Action(this, 1))
+    }
+}
+
+function Action(baseAction, amount)
+{
+    var self = this;
+
+    var baseAction = baseAction;
+    self.name = baseAction.name;
+    self.description = baseAction.description;
+    self.duration = baseAction.duration;
+    self.gameModel = baseAction.gameModel;
+
+
+    self.finish = baseAction.finish;
+    self.tick = baseAction.tick;
+    self.visible = baseAction.visible;
+    self.clickable = baseAction.clickable;
+    self.tickMultiplier = baseAction.tickMultiplier;
+
+
+    self.maxAmount = ko.observable(amount);
+    
+    self.currentTick = ko.observable(0);
+    self.currentAmount = ko.observable(0);
+
+    self.failed = ko.observable(false);
+
+
+    self.canMoveUp = function()
+    {
+        return self.gameModel.nextActions()[0] != self;
+    }
+
+    self.canMoveDown = function()
+    {
+        return self.gameModel.nextActions()[self.gameModel.nextActions().length - 1] != self;
+    }
+
+    self.moveUp = function()
+    {
+        var na = self.gameModel.nextActions;
+        let pos = na.indexOf(self);
+        na.splice(pos, 1, na()[pos - 1]);
+        na.splice(pos - 1, 1, self);
+        
+    }
+
+    self.moveDown = function()
+    {
+        var na = self.gameModel.nextActions;
+        let pos = na.indexOf(self);
+        na.splice(pos, 1, na()[pos + 1]);
+        na.splice(pos + 1, 1, self);
+    }
+
+    self.decrementAmount = function()
+    {
+        obs.increment(self.maxAmount, -1);
+    }
+    
+    self.incrementAmount = function()
+    {
+        obs.increment(self.maxAmount, 1);
+    }
+
+    self.done = function()
+    {
+        return self.currentAmount() >= self.maxAmount();
+    }
+
+    self.copy = function()
+    {
+        return new Action(baseAction, self.maxAmount());
+    }
+
+    self.doTick = function()
+    {
+        obs.increment(self.currentTick, self.tickMultiplier());
+        self.tick();
+    }
+
+    self.handleOverflow = function() {
+        if(self.currentTick() >= self.duration())
+        {
+            self.currentTick(0);
+            self.finish();
+            obs.increment(self.currentAmount)
+        }
+    }
+}
+
+/**
+ * 
+ * @param {string} name 
+ * @param {gameModel} gameModel 
+ */
+function townExplorable(name, gameModel)
+{
+    var self = this;
+    self.name= name;
+
+    self.found= ko.observable(0);
+    self.withValue= ko.observable(0);
+    self.withoutValue= 0;
+    self.done= ko.observable(0);
+    self.valueFirst= ko.observable(false);
+
+    self.total = function()
+    {
+        return self.found() + self.withValue() + self.withoutValue + self.done()
+    }
+
+    self.gameModel = gameModel;
+
+    self.takeAction = function(chance = 10)
+    {
+        if(self.valueFirst())
+        {
+            if(self.withValue() > 0)
+            {
+                obs.increment(self.withValue, -1)
+                obs.increment(self.done, 1)
+                return true;
+            }
+        }
+        if(self.found() > 0)
+        {
+            var totalChecked = self.withValue() + self.withoutValue + self.done()
+            if(totalChecked % chance == chance - 1)
+            {
+                obs.increment(self.done, 1)
+                obs.increment(self.found, -1)
+                return true;
+            }
+            self.withoutValue += 1
+            obs.increment(self.found, -1)
+            return false;
+        }
+        else if(self.withValue() > 0)
+        {
+            obs.increment(self.withValue, -1)
+            obs.increment(self.done, 1)
+            return true;
+        }
+        return false;
+    }
+
+    self.reset = function()
+    {
+        this.withValue(this.withValue() + this.done())
+        this.done(0);
+    }
+}
+
+function gameModel()
+{
+    var self = this;
+    self.stats = ko.observableArray([
+        new Stat("Dexterity"),
+        new Stat("Strength"),
+        new Stat("Constitution"),
+        new Stat("Speed"),
+        new Stat("Perception"),
+        new Stat("Charisma"),
+        new Stat("Intelligence"),
+        new Stat("Luck"),
+        new Stat("Soul"),
+    ]);
+
+    self.currentTownDisplay = ko.observable(0);
+    self.currentTownPlayerPawn = 0;
+    self.money = ko.observable(0);
+
+    self.currentActions = ko.observableArray([]);
+    self.actionPointer = 0;
+
+    self.unlockables = ko.observableArray([]);
+
+    /**
+     * 
+     * @param {Action} action 
+     */
+    self.isCurrentValidAction = function(action)
+    {
+        var name = action.name;
+        var town = self.world.towns[this.currentTownPlayerPawn];
+        return town.actions().find(element => element.name === name) != undefined;
+    }
+
+    self.world = {
+        towns:[
+            {
+                name: "A small village",
+                locked: ko.observable(false),
+                actions: ko.observableArray([
+                    new BaseAction(self, "Explore", "Take a look around")
+                        .duration(function()
+                        {
+                            return 150;
+                        })
+                        .finish(function()
+                        {
+                            self.world.towns[0].progress[0].increment();
+                        })
+                        .tick(function()
+                        {
+                            self.getStatByName("Dexterity").incrementWithPower(1);
+                            self.getStatByName("Perception").incrementWithPower(2);
+                        })
+                        .visible(function()
+                        {
+                            return true
+                        })
+                        .clickable(function()
+                        {
+                            return true
+                        })
+                        .tickMultiplier(function()
+                        {
+                            return logerithmic(self.getStatByName("Dexterity").value() * self.getStatByName("Perception").value())
+                        }),
+                    new BaseAction(self, "Smash Pots", "Like a particular elf-boy")
+                        .duration(function()
+                        {
+                            return 50;
+                        })
+                        .finish(function()
+                        {
+                            var action = self.world.towns[0].progress[0];
+                            var success = action.items[0].takeAction();
+                            if(success)
+                            {
+                                obs.increment(self.currentTicks, 100)
+                                obs.increment(self.maxTicks, 100)
+                            }
+                        })
+                        .tick(function()
+                        {
+                            self.getStatByName("Strength").incrementWithPower(.2);
+                            self.getStatByName("Constitution").incrementWithPower(.2);                
+                        })
+                        .visible(function()
+                        {
+                            return self.world.towns[0].progress[0].items[0].total() > 0
+                        })
+                        .clickable(function()
+                        {
+                            return self.world.towns[0].progress[0].items[0].total() > 0
+                        })
+                        .tickMultiplier(function()
+                        {
+                            return logerithmic(self.getStatByName("Strength").value() * self.getStatByName("Constitution").value())
+                        }),
+                    new BaseAction(self, "Loot Pockets", "You dirty thief!")
+                        .duration(function()
+                        {
+                            return 50;
+                        })
+                        .finish(function(){
+                            var action = self.world.towns[0].progress[0];
+                            var success = action.items[1].takeAction(18);
+                            if(success)
+                            {
+                                obs.increment(self.money, 10)
+                            }
+                        })
+                        .tick(function()
+                        {
+                            self.getStatByName("Intelligence").incrementWithPower(.2);
+                            self.getStatByName("Luck").incrementWithPower(.2);                
+                        })
+                        .visible(function()
+                        {
+                            return self.world.towns[0].progress[0].items[1].total() > 0
+                        })
+                        .clickable(function()
+                        {
+                            return self.world.towns[0].progress[0].items[1].total() > 0
+                        })
+                        .tickMultiplier(function()
+                        {
+                            return logerithmic(self.getStatByName("Intelligence").value() * self.getStatByName("Luck").value())
+                        }),
+                    new BaseAction(self, "Buy Mana", "Can't do anything else with that money... Or can you?")
+                        .duration(function()
+                        {
+                            return 10
+                        })
+                        .finish (function()
+                        {
+                            if(self.money() > 0)
+                            {
+                                obs.increment(self.currentTicks, self.money() * 20);
+                                obs.increment(self.maxTicks, self.money() * 20);
+                                self.money(0);
+                            }
+                        })
+                        .tick (function()
+                        {
+                            self.getStatByName("Charisma").incrementWithPower(.1);
+                        })
+                        .visible (function()
+                        {
+                            return self.isUnlocked("FirstGold")
+                        })
+                        .clickable (function()
+                        {
+                            return self.isUnlocked("FirstGold")
+                        })
+                        .tickMultiplier (function()
+                        {
+                            return 1
+                        }),
+                    new BaseAction(self, "Visit Tavern", "Hey, you deserve a break too, right?")
+                        .duration(function()
+                        {
+                            return 100
+                        })
+                        .finish (function()
+                        {
+                            self.currentTownPlayerPawn = 1;
+                            if(self.world.towns[1].locked())
+                            {
+                                self.currentTownDisplay(self.currentTownPlayerPawn);
+                                self.world.towns[1].locked(false);
+                                
+                            }
+                        })
+                        .tick (function()
+                        {
+
+                        
+                        })
+                        .visible (function() 
+                        {
+                            return self.world.towns[0].progress[0].value() >= 40
+                        })
+                        .clickable (function() 
+                        {
+                            return self.world.towns[0].progress[0].value() >= 40
+                        })
+                        .tickMultiplier (function() 
+                        {
+                            return 1
+                        }),
+                ]),
+                progress:
+                [
+                    {
+                        name: "Explored",
+                        value: ko.observable(0),
+                        meta: ko.observable(0),
+                        visible: function()
+                        {
+                            return true;
+                        },
+                        items:
+                        [
+                            new townExplorable("Pots smashed"),
+                            new townExplorable("Pockets looted")
+                        ],
+                        increment: function()
+                        {
+                            if(this.value() >= 100)
+                            {
+                                this.value(100);
+                                this.meta(100);
+                                return;
+                            }
+                            obs.increment(this.meta, (100 / (self.world.towns[0].progress[0].value() + 1)));
+                            if(this.meta() >= 100)
+                            {
+                                this.meta(0);
+                                obs.increment(this.value);
+                                this.valueIncrease();
+                            }
+                        },
+                        valueIncrease: function()
+                        {
+                            obs.increment(this.items[0].found);
+                            if(this.value() > 10)
+                            {
+                                obs.increment(this.items[1].found);
+                            }
+                        }
+                    }
+                ]
+            },
+            {
+                name: "The tavern",
+                locked: ko.observable(true),
+                actions: ko.observableArray([
+                    new BaseAction(self, "Leave Tavern", "Welp, off to the outside again!")
+                        .duration(function()
+                        {
+                            return 100;
+                        })
+                        .finish(function()
+                        {
+                            self.currentTownPlayerPawn = 0;
+                        })
+                        .tick(function() { })
+                        .visible(function() {return true})
+                        .clickable(function() {return true})
+                        .tickMultiplier(function() {return 1}),
+                ]),
+                progress:
+                [
+                    {
+                        name: "Drunks talked to",
+                        value: ko.observable(0),
+                        meta: ko.observable(0),
+                        visible: function()
+                        {
+                            return true;
+                        },
+                        items:
+                        [
+                            new townExplorable("Rumors heared"),
+                        ],
+                        increment: function()
+                        {
+                            if(this.value() >= 100)
+                            {
+                                this.value(100);
+                                this.meta(100);
+                                return;
+                            }
+                            obs.increment(this.meta, (100 / (this.value() + 1)));
+                            if(this.meta() >= 100)
+                            {
+                                this.meta(0);
+                                obs.increment(this.value);
+                                this.valueIncrease();
+                            }
+                        },
+                        valueIncrease: function()
+                        {
+                            obs.increment(this.items[0].found);
+                        }
+                    }
+                ]
+            }
+        ],
+    }
+
+    self.startTicks = 250;
+    self.maxTicks = ko.observable(self.startTicks);
+    self.currentTicks = ko.observable(self.startTicks);
+    self.stopped = ko.observable(true);
+    self.longerStopped = false;
+
+    self.waitBeforeRestart = ko.observable(false);
+    self.waitOnFail = ko.observable(false);
+    self.repeatLastAction = ko.observable(false);
+
+    self.inTown = function(num)
+    {
+        return self.currentTownDisplay() == num
+    }
+
+    self.nextActions = ko.observableArray([]);
+
+    self.ticksInSeconds = function()
+    {
+        return (self.currentTicks() / 60).toFixed(2)
+    }
+    
+    self.getStatByName = function(name)
+    {
+        var finalStat = undefined
+        self.stats().forEach(function(stat){
+            if(stat.name == name)
+            {
+                finalStat = stat;
+            }
+        });
+        return finalStat;
+    }
+    
+    self.incrementShownTown = function()
+    {
+        obs.increment(self.currentTownDisplay)
+    }
+    
+    self.maySeeNeighborTown = function(offset)
+    {
+        var newPos = self.currentTownDisplay() + offset;
+        if(newPos < 0) return false;
+        if(newPos > self.world.towns.length - 1) return false;
+        if(self.world.towns[newPos].locked()) return false;
+        return true;
+    }
+
+    self.decrementShownTown = function()
+    {
+        obs.increment(self.currentTownDisplay, -1)
+    }
+
+    self.restart = function()
+    {
+        self.stopped(false);
+        self.actionPointer = 0;
+        self.longerStopped = false;
+        self.currentTicks(self.startTicks)
+        self.maxTicks(self.startTicks)
+        self.currentActions.removeAll()
+        self.failedThisLoop = false;
+        self.currentTownPlayerPawn = 0;
+
+        self.money(0);
+
+        self.world.towns.forEach(function(town){
+            town.progress.forEach(function(prog){
+                prog.items.forEach(function(item){
+                    item.reset();
+                })
+            })
+        })
+
+
+        self.stats().forEach(function(stat){
+            stat.value(0)
+            stat.valuePercentage(0)
+        });
+
+        self.nextActions().forEach(function(ac)
+        {
+            self.currentActions.push(ac.copy())
+        })
+    }
+
+    self.removeCurrentAction = function(data)
+    {
+        self.currentActions.remove(data)
+    }
+
+    self.removeNextAction = function(data)
+    {
+        self.nextActions.remove(data)
+    }
+
+    
+    //Stops the loop from executing.
+    //The tick function continues to fire!
+    self.stop = function()
+    {
+        if(self.waitBeforeRestart())
+        {
+            self.longerStopped = true;
+        }
+        self.stopped(true)
+    }
+
+    self.unlockUnlockables = function()
+    {
+        if(self.money() > 0)
+        {
+            self.unlock("FirstGold")
+        }
+    }
+
+    self.lock = function(name)
+    {
+        if(!validUnlockables.includes(name))
+            console.warn("Game-Unlockables (lock) : unknown id: " + name);
+        self.unlockables.removeAll(name);
+    }
+
+    self.unlock = function(name)
+    {
+        if(!validUnlockables.includes(name))
+            console.warn("Game-Unlockables (unlock) : unknown id: " + name);
+        pushUnique(self.unlockables, name);
+    }
+
+    self.isUnlocked = function(name)
+    {
+        if(!validUnlockables.includes(name))
+            console.warn("Game-Unlockables (isUnlocked) : unknown id: " + name);
+        return self.unlockables().includes(name);
+    }
+
+    self.failedThisLoop = false;
+    //The main gameloop.
+    self.tick = function()
+    {
+        self.unlockUnlockables();
+        if(self.stopped())
+        {
+            if(!self.longerStopped && !self.waitBeforeRestart())
+            {
+                self.restart();
+                return;
+            }
+            else
+            {
+                self.longerStopped = true;
+            }
+            return;
+        }
+
+        if(self.currentTicks() <= 0)
+        {
+            self.stop()
+
+            if(self.waitOnFail())
+            {
+                var runEnded = (self.actionPointer == self.currentActions().length);
+                self.longerStopped = !runEnded;
+            }
+            return;
+        }
+
+        self.stats().forEach(function(elem)
+        {
+            elem.handleOverflow();
+        })
+        
+        
+
+        var elem = self.currentActions()[self.actionPointer];
+        if(!elem && self.repeatLastAction())
+        {
+            elem = self.currentActions()[self.currentActions().length - 1]
+        }
+        if(elem)
+        {
+            if(!self.isCurrentValidAction(elem))
+            {
+                if(self.actionPointer < self.currentActions().length)
+                {
+                    self.actionPointer ++;
+                }
+                obs.increment(self.currentTicks, -1)
+                this.failedThisLoop = true;
+                elem.failed(true);
+            }
+            elem.doTick();
+            elem.handleOverflow();
+            if(elem.done() && self.actionPointer < self.currentActions().length)
+            {
+                self.actionPointer ++;
+            }
+            obs.increment(self.currentTicks, -1)
+        }
+        
+        var runEnded = (self.actionPointer == self.currentActions().length && !self.repeatLastAction());
+        if(runEnded)
+        {
+            self.stop()
+            if(self.currentActions().length == 0)
+            {
+                self.longerStopped = true;
+            }
+            if(this.failedThisLoop && self.waitOnFail())
+            {
+                self.longerStopped = true;
+            }
+        }
+    }
+
+}
+
+
+var speedup = 1;
+
+function startupLoop()
+{
+    if(ready !== 1)
+    {
+        return;
+    }
+    clearTimeout(startup)
+    window.globalGameModel = new gameModel()
+    
+    ko.applyBindings(globalGameModel)
+    
+    var notbremse = setInterval(function(){
+        for (let i = 0; i < speedup; i++) {
+            try{
+                globalGameModel.tick();
+            }catch
+            {
+                console.warn("Notbremse gezogen jugnge!");
+                clearInterval(notbremse);
+                break;
+            }
+        }
+    }, 1000/60)
+}
+var startup = setInterval(startupLoop, 10);

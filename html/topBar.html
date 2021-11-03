@@ -1,0 +1,22 @@
+<div id="ticks" class="center">
+    <div class="progress big progress-centered">
+        <div class="progress-value blue" data-bind="style: { width: (currentTicks() * 100 / maxTicks()) + '%'}"></div>
+    </div>
+</div>
+
+
+
+<div id="inventory" class="center">
+    <div data-bind="text: currentTicks() + '/' + maxTicks() +  ' ticks | ' + ticksInSeconds() + 's'"></div>
+    <div data-bind="text: '&nbsp;| ' + money() + 'g', visible: unlockables.FirstGold"></div>
+</div>
+
+
+
+<div class="center">
+    Wait before restart: <input type="checkbox" data-bind="checked: waitBeforeRestart"/>
+    Wait on failed loop: <input type="checkbox" data-bind="checked: waitOnFail"/>
+</div>
+<div class="center">
+    <button data-bind="click: restart"> Restart!</button>
+</div>

@@ -1,0 +1,11 @@
+<div data-bind="foreach: stats">
+    <div>
+        <div data-bind="text: name + ': ' + value() + ' (' + metaValue() + ')'">DEFAULT VALUE HERE</div>
+        <div class="progress">
+            <div class="progress-value" data-bind="style: { width: valuePercentage() + '%'}"></div>
+        </div>
+        <div class="progress">
+            <div class="progress-value" data-bind="style: { width: metaValuePercentage() + '%'}"></div>
+        </div>
+    </div>
+</div>

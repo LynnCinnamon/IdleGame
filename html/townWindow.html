@@ -1,0 +1,27 @@
+<div class="flex center">
+    <div class="title center" data-bind="visible: maySeeNeighborTown(-1), click: decrementShownTown">&lt;&nbsp;&nbsp;</div>
+    <div class="title center" data-bind="visible: !maySeeNeighborTown(-1)">&nbsp;&nbsp;&nbsp;</div>
+    <div class="title center" data-bind="text: world.towns[currentTownDisplay()].name"></div>
+    <div class="title center" data-bind="visible: maySeeNeighborTown(1), click: incrementShownTown">&nbsp;&nbsp;&gt;</div>
+    <div class="title center" data-bind="visible: !maySeeNeighborTown(1)">&nbsp;&nbsp;&nbsp;</div>
+</div>
+<div class="town-progress center" data-bind="foreach: world.towns[currentTownDisplay()].progress">
+    <div data-bind="visible: visible()">
+        <div data-bind="text: name + ' ' + (value()) + '%'"></div>
+        <div class="progress short">
+            <div class="progress-value light-blue" data-bind="style: { width: (value()) + '%'}"></div>
+        </div>
+        <div class="progress short">
+            <div class="progress-value light-purple" data-bind="style: { width: (meta()) + '%'}"></div>
+        </div>
+        <div data-bind="foreach: items">
+            <div class="flex" data-bind="visible: total() > 0">
+                <div data-bind="text: name + ' ' + done() + '/' + withValue() + '/'+ found()"></div>
+                <input type="checkbox" data-bind="checked: valueFirst"/> Lootable first
+            </div>
+        </div>
+    </div>
+</div>
+<div class="action-pool center flex" data-bind="foreach: world.towns[currentTownDisplay()].actions()">
+    <div class="action-button" data-bind="attr: { title: description }, text: name, click: addToPool, visible: visible()"></div>
+</div>

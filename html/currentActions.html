@@ -1,0 +1,16 @@
+<b>Current Actions</b>
+<div class="flex">
+    Repeat last action on list:
+    <input type="checkbox" data-bind="checked: repeatLastAction">
+</div>
+<div data-bind="foreach: currentActions()">
+    <div class="action-card" data-bind="visible: maxAmount() > 0">
+        <div data-bind="text: name + ' (' + currentAmount() + ')'"></div>
+        <div class="progress short">
+            <div class="progress-value" data-bind="style: { width: (currentTick() * 100 / duration()) + '%'}"></div>
+        </div>
+        <div class="progress short" data-bind="visible: maxAmount() > 1">
+            <div class="progress-value" data-bind="style: { width: (currentAmount() * 100 / maxAmount()) + '%'}"></div>
+        </div>
+    </div>
+</div>

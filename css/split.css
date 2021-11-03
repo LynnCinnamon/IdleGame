@@ -1,0 +1,37 @@
+.wrapper {
+    /* Use flexbox */
+    display: flex;
+    width: 100%;
+    height: 100%;
+}
+
+.wrapper.column {
+    flex-direction: column;
+}
+
+.box {
+    /* Use box-sizing so that element's outerwidth will match width property */
+    box-sizing: border-box;
+    /* Allow box to grow and shrink, and ensure they are all equally sized */
+    flex: 1 1 auto;
+}
+
+.splitter {
+    width: .5vh;
+    padding: 0;
+    flex: 0 0 auto;
+}
+
+.splitter::before {
+    content: '';
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: grey;
+    margin: 0 auto;
+}
+
+.wrapper.column > .splitter {
+    height: .5vh;
+    width: 100%;
+}
