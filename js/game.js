@@ -94,12 +94,12 @@ function BaseAction(gamemodel, name, description)
     self.description = description;
     
     //Functions that overwrite themselves when called.
-    self.duration        = function (func) { if(typeof(func) === "function") self["duration"]       = func; else throw new Error("Unimplemented function called in BaseAction " + self.name); return self; };
-    self.finish          = function (func) { if(typeof(func) === "function") self["finish"]         = func; else throw new Error("Unimplemented function called in BaseAction " + self.name); return self; };
-    self.tick            = function (func) { if(typeof(func) === "function") self["tick"]           = func; else throw new Error("Unimplemented function called in BaseAction " + self.name); return self; };
-    self.visible         = function (func) { if(typeof(func) === "function") self["visible"]        = func; else throw new Error("Unimplemented function called in BaseAction " + self.name); return self; };
-    self.clickable       = function (func) { if(typeof(func) === "function") self["clickable"]      = func; else throw new Error("Unimplemented function called in BaseAction " + self.name); return self; };
-    self.tickMultiplier  = function (func) { if(typeof(func) === "function") self["tickMultiplier"] = func; else throw new Error("Unimplemented function called in BaseAction " + self.name); return self; };
+    self.duration        = function (callback) { if(typeof(callback) === "function") self["duration"]       = callback; else throw new Error("Unimplemented function called in BaseAction " + self.name); return self; };
+    self.finish          = function (callback) { if(typeof(callback) === "function") self["finish"]         = callback; else throw new Error("Unimplemented function called in BaseAction " + self.name); return self; };
+    self.tick            = function (callback) { if(typeof(callback) === "function") self["tick"]           = callback; else throw new Error("Unimplemented function called in BaseAction " + self.name); return self; };
+    self.visible         = function (callback) { if(typeof(callback) === "function") self["visible"]        = callback; else throw new Error("Unimplemented function called in BaseAction " + self.name); return self; };
+    self.clickable       = function (callback) { if(typeof(callback) === "function") self["clickable"]      = callback; else throw new Error("Unimplemented function called in BaseAction " + self.name); return self; };
+    self.tickMultiplier  = function (callback) { if(typeof(callback) === "function") self["tickMultiplier"] = callback; else throw new Error("Unimplemented function called in BaseAction " + self.name); return self; };
 
     self.addToPool = function()
     {
