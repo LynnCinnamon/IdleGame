@@ -97,6 +97,22 @@ function BaseAction(gamemodel, name, description)
     self._internals = {}
     self._defaults = {}
 
+    self.computed_description = function()
+    {
+        var string = self.description + "\n\n";
+        if( Object.keys(self._stats).length == 0 )
+            return string; // We have no stats associated with this Action...
+
+        var sum = 0;
+        Object.keys(self._stats).forEach((key)=>{
+            sum += self._stats[key]
+        })
+        Object.keys(self._stats).forEach((key)=>{
+            string += key + ": " + (self._stats[key] / sum * 100).toFixed(0) + "%\n";
+        })
+        return string
+    }
+
     self.setOrRunFunction = function(name, callback)
     {
         if(typeof(callback) === "function")
@@ -349,6 +365,11 @@ function gameModel()
         new Stat("Soul"),
     ]);
 
+    self.mouse = {
+        x: ko.observable(0),
+        y: ko.observable(0)
+    }
+
     self.currentTownDisplay = ko.observable(0);
     self.currentTownPlayerPawn = 0;
     self.money = ko.observable(0);
@@ -375,7 +396,7 @@ function gameModel()
                 name: "A small village",
                 locked: ko.observable(false),
                 actions: ko.observableArray([
-                    new BaseAction(self, "Explore", "Take a look around")
+                    new BaseAction(self, "Explore", "Take a look around.\nThere must be something to do...")
                         .duration(function()
                         {
                             return 150;
@@ -385,9 +406,9 @@ function gameModel()
                             self.world.towns[0].progress[0].increment();
                         })
                         .stats({
-                            "Speed": 10,
-                            "Perception": 4,
-                            "Dexterity": 1
+                            "Speed": 70,
+                            "Perception": 20,
+                            "Dexterity": 10
                         })
                         .visible(function()
                         {
@@ -413,8 +434,8 @@ function gameModel()
                             }
                         })
                         .stats({
-                            "Strength": 1,
-                            "Constitution": 1,
+                            "Strength": 50,
+                            "Constitution": 50,
                         })
                         .visible(function()
                         {
@@ -438,8 +459,8 @@ function gameModel()
                             }
                         })
                         .stats({
-                            "Intelligence": 1,
-                            "Luck": 1,
+                            "Intelligence": 50,
+                            "Luck": 50,
                         })
                         .visible(function()
                         {
@@ -878,7 +899,6 @@ function startupLoop()
         return;
     }
     clearTimeout(startup)
-    window.globalGameModel = new gameModel()
     
     ko.applyBindings(globalGameModel)
     
@@ -895,4 +915,23 @@ function startupLoop()
         }
     }, 1000/60)
 }
+
+
+
+window.globalGameModel = new gameModel()
+$("body").mousemove(function(e) {
+    globalGameModel.mouse.x(e.pageX);
+    globalGameModel.mouse.y(e.pageY);
+})
 var startup = setInterval(startupLoop, 10);
+
+
+function hidePopup(e)
+{
+    e.getElementsByClassName("popup")[0].style.display="none";
+}
+
+function showPopup(e)
+{
+    e.getElementsByClassName("popup")[0].style.display="block";
+}

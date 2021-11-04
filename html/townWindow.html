@@ -23,5 +23,16 @@
     </div>
 </div>
 <div class="action-pool center flex" data-bind="foreach: world.towns[currentTownDisplay()].actions()">
-    <div class="action-button" data-bind="attr: { title: description }, text: name, click: addToPool, visible: visible()"></div>
+    <div class="action-button" data-bind="visible: visible()" onmouseout="hidePopup(this)" onmouseover="showPopup(this)">
+        <div data-bind="text: name, click: addToPool", style="width: 100%; height: 100%"></div>
+        <div class="popup" id="popup" data-bind="style: { top: globalGameModel.mouse.y() + 20, left: globalGameModel.mouse.x() + 20}"
+        ><div data-bind="text: description + '\n\n'"></div
+            ><table data-bind="foreach: (Object.entries(_stats))"
+                ><tr
+                    ><th data-bind="text: $data[0] + ':'">Stat</th
+                    ><th data-bind="text: $data[1] + '%'">Value</th
+                ></tr
+            ></table
+        ></div>
+    </div>
 </div>

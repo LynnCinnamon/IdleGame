@@ -22,6 +22,21 @@ html, body
 }
 
 
+.popup{
+    position: fixed;
+    background-color: bisque;
+    display: none;
+    border-radius: 15px;
+    line-height: normal;
+    text-align: left;
+    padding: 10px;
+    border-color: black;
+    border-width: 3px;
+    border-style: solid;
+    max-width: 400px;
+    white-space: pre-wrap;
+    z-index: 9999999999999;
+}
 
 .action-card
 {
@@ -125,6 +140,8 @@ html, body
     border-radius:20px;
 
     margin: 10px;
+    
+    position: relative;
 
     vertical-align: middle;
     line-height: 100px;
