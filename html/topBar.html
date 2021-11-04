@@ -8,7 +8,7 @@
 
 <div id="inventory" class="center">
     <div data-bind="text: currentTicks() + '/' + maxTicks() +  ' ticks | ' + ticksInSeconds() + 's'"></div>
-    <div data-bind="text: '&nbsp;| ' + money() + 'g', visible: unlockables.FirstGold"></div>
+    <div data-bind="text: '&nbsp;| ' + money() + 'g', visible: isUnlocked('FirstGold')"></div>
 </div>
 
 
@@ -19,4 +19,5 @@
 </div>
 <div class="center">
     <button data-bind="click: restart"> Restart!</button>
+    <button data-bind="click: toggleStart, text: stopped() ? 'Start' : 'Stop'"> Restart!</button>
 </div>

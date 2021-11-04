@@ -724,6 +724,20 @@ function gameModel()
         obs.increment(self.currentTownDisplay, -1)
     }
 
+    self.toggleStart = function()
+    {
+        if(self.stopped())
+        {
+            self.stopped(false);
+            self.longerStopped = false;
+        }
+        else
+        {
+            self.longerStopped = true;
+            self.stop();
+        }
+    }
+
     self.restart = function()
     {
         self.stopped(false);
@@ -813,6 +827,11 @@ function gameModel()
     self.tick = function()
     {
         self.unlockUnlockables();
+        if(self.currentActions().length == 0)
+        {
+            self.stopped(true)
+            self.longerStopped = true;
+        }
         if(self.stopped())
         {
             if(!self.longerStopped && !self.waitBeforeRestart())

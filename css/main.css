@@ -70,15 +70,15 @@ html, body
 }
 
 .blue{
-    background: blue !important; 
+    background: blue !important;
 }
 
 .light-blue{
-    background: lightblue !important; 
+    background: lightblue !important;
 }
 
 .light-purple{
-    background: rgb(136, 44, 136) !important; 
+    background: rgb(136, 44, 136) !important;
 }
 
 .delete{
@@ -90,7 +90,7 @@ html, body
     border:1px solid whitesmoke;
     border-radius:10px;
     background: rgb(85, 36, 36);
-    
+
     position: absolute;
     right: 5px;
     top: 5px;
@@ -140,12 +140,12 @@ html, body
     border-radius:20px;
 
     margin: 10px;
-    
+
     position: relative;
 
     vertical-align: middle;
     line-height: 100px;
     text-align: center;
-    
+
     cursor: pointer;
 }
