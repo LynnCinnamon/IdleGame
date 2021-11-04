@@ -67,7 +67,7 @@ function Stat(name)
     self.incrementWithPower = function(power)
     {
         obs.increment(self.valuePercentage, power + power * self.metaValue() * 0.1)
-        obs.increment(self.metaValuePercentage, power * 0.1 / (self.metaValue() + 1))
+        obs.increment(self.metaValuePercentage, power * 0.1 / Math.sqrt(self.metaValue() + 1))
     }
 
     self.handleOverflow = function()
@@ -95,6 +95,7 @@ function BaseAction(gamemodel, name, description)
     
     //For storing some functions this object will hold
     self._internals = {}
+    self._defaults = {}
 
     self.setOrRunFunction = function(name, callback)
     {
@@ -128,7 +129,31 @@ function BaseAction(gamemodel, name, description)
     self.clickable      = self.indirection("clickable");
     self.tickMultiplier = self.indirection("tickMultiplier");
 
-    self.stats = {};
+    //default implementations
+    self.tick(function(that)
+    {
+        if(typeof(that) === "undefined") return;
+        if(typeof(that._stats) === "undefined") return;
+        if( Object.keys(that._stats).length == 0 )
+            return; // We have no stats associated with this Action...
+        var sum = 0;
+        Object.keys(that._stats).forEach((key)=>{
+            sum += that._stats[key]
+        })
+        Object.keys(that._stats).forEach((key)=>{
+            self.gameModel.getStatByName(key).incrementWithPower(that._stats[key] / sum);
+        })
+    })
+
+    self._defaults = {
+        tick: self.tick,
+    }
+
+    self._stats = {};
+    self.stats = function(s){
+        self._stats = s;
+        return self;
+    }
 
     self.addToPool = function()
     {
@@ -147,6 +172,7 @@ function Action(baseAction, amount)
     self.gameModel = baseAction.gameModel;
 
     self._internals = baseAction._internals;
+    self._defaults = baseAction._defaults;
 
     self.finish = baseAction.finish;
     self.tick = baseAction.tick;
@@ -340,11 +366,16 @@ function gameModel()
                         {
                             self.world.towns[0].progress[0].increment();
                         })
-                        .tick(function()
+                        .stats({
+                            "Speed": 10,
+                            "Perception": 4,
+                            "Dexterity": 1
+                        })
+                        /*.tick(function()
                         {
                             self.getStatByName("Dexterity").incrementWithPower(1);
                             self.getStatByName("Perception").incrementWithPower(2);
-                        })
+                        })*/
                         .visible(function()
                         {
                             return true
