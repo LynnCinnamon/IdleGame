@@ -145,8 +145,26 @@ function BaseAction(gamemodel, name, description)
         })
     })
 
+    self.tickMultiplier(function(that)
+    {
+        if(typeof(that) === "undefined") return 1;
+        if(typeof(that._stats) === "undefined") return 1;
+        if( Object.keys(that._stats).length == 0 )
+            return 1; // We have no stats associated with this Action...
+        var sumStats = 0;
+        Object.keys(that._stats).forEach((key)=>{
+            sumStats += that._stats[key]
+        })
+        var sum = 0;
+        Object.keys(that._stats).forEach((key)=>{
+            sum += self.gameModel.getStatByName(key).value() * that._stats[key] / sumStats;
+        })
+        return logerithmic(sum);
+    })
+
     self._defaults = {
         tick: self.tick,
+        tickMultiplier: self.tickMultiplier,
     }
 
     self._stats = {};
@@ -371,11 +389,6 @@ function gameModel()
                             "Perception": 4,
                             "Dexterity": 1
                         })
-                        /*.tick(function()
-                        {
-                            self.getStatByName("Dexterity").incrementWithPower(1);
-                            self.getStatByName("Perception").incrementWithPower(2);
-                        })*/
                         .visible(function()
                         {
                             return true
@@ -383,10 +396,6 @@ function gameModel()
                         .clickable(function()
                         {
                             return true
-                        })
-                        .tickMultiplier(function()
-                        {
-                            return 1
                         }),
                     new BaseAction(self, "Smash Pots", "Like a particular elf-boy")
                         .duration(function()
@@ -396,17 +405,16 @@ function gameModel()
                         .finish(function()
                         {
                             var action = self.world.towns[0].progress[0];
-                            var success = action.items[0].takeAction();
+                            var success = action.items[0].takeAction(5);
                             if(success)
                             {
                                 obs.increment(self.currentTicks, 100)
                                 obs.increment(self.maxTicks, 100)
                             }
                         })
-                        .tick(function()
-                        {
-                            self.getStatByName("Strength").incrementWithPower(.2);
-                            self.getStatByName("Constitution").incrementWithPower(.2);                
+                        .stats({
+                            "Strength": 1,
+                            "Constitution": 1,
                         })
                         .visible(function()
                         {
@@ -415,10 +423,6 @@ function gameModel()
                         .clickable(function()
                         {
                             return self.world.towns[0].progress[0].items[0].total() > 0
-                        })
-                        .tickMultiplier(function()
-                        {
-                            return 1
                         }),
                     new BaseAction(self, "Loot Pockets", "You dirty thief!")
                         .duration(function()
@@ -427,16 +431,15 @@ function gameModel()
                         })
                         .finish(function(){
                             var action = self.world.towns[0].progress[0];
-                            var success = action.items[1].takeAction(18);
+                            var success = action.items[1].takeAction(2);
                             if(success)
                             {
                                 obs.increment(self.money, 10)
                             }
                         })
-                        .tick(function()
-                        {
-                            self.getStatByName("Intelligence").incrementWithPower(.2);
-                            self.getStatByName("Luck").incrementWithPower(.2);                
+                        .stats({
+                            "Intelligence": 1,
+                            "Luck": 1,
                         })
                         .visible(function()
                         {
@@ -445,10 +448,6 @@ function gameModel()
                         .clickable(function()
                         {
                             return self.world.towns[0].progress[0].items[1].total() > 0
-                        })
-                        .tickMultiplier(function()
-                        {
-                            return 1
                         }),
                     new BaseAction(self, "Buy Mana", "Can't do anything else with that money... Or can you?")
                         .duration(function()
@@ -475,10 +474,6 @@ function gameModel()
                         .clickable (function()
                         {
                             return self.isUnlocked("FirstGold")
-                        })
-                        .tickMultiplier (function()
-                        {
-                            return 1
                         }),
                     new BaseAction(self, "Visit Tavern", "Hey, you deserve a break too, right?")
                         .duration(function()
@@ -507,10 +502,6 @@ function gameModel()
                         .clickable (function() 
                         {
                             return self.world.towns[0].progress[0].value() >= 40
-                        })
-                        .tickMultiplier (function() 
-                        {
-                            return 1
                         }),
                 ]),
                 progress:
@@ -546,10 +537,47 @@ function gameModel()
                         },
                         valueIncrease: function()
                         {
-                            obs.increment(this.items[0].found);
-                            if(this.value() > 10)
+                            var potRessauces = {
+                                1  : 5,
+                                5  : 5,
+                                10 : 5,
+                                20 : 5,
+                                25 : 5,
+                                30 : 5,
+                                35 : 5,
+                                40 : 5,
+                                45 : 5,
+                                50 : 5,
+                                55 : 5,
+                                60 : 5,
+                                65 : 5,
+                                70 : 5,
+                                75 : 5,
+                                80 : 5,
+                                85 : 5,
+                                90 : 5,
+                                95 : 5,
+                                100: 5,
+                            }
+                            var pocketRessauces = {
+                                10 : 2,
+                                20 : 2,
+                                30 : 2,
+                                40 : 2,
+                                50 : 2,
+                                60 : 2,
+                                70 : 2,
+                                80 : 2,
+                                90 : 2,
+                                100: 2,
+                            }
+                            if(potRessauces[this.value()])
                             {
-                                obs.increment(this.items[1].found);
+                                obs.increment(this.items[0].found, potRessauces[this.value()]);
+                            }
+                            if(pocketRessauces[this.value()])
+                            {
+                                obs.increment(this.items[1].found, pocketRessauces[this.value()]);
                             }
                         }
                     }
@@ -568,10 +596,8 @@ function gameModel()
                         {
                             self.currentTownPlayerPawn = 0;
                         })
-                        .tick(function() { })
                         .visible(function() {return true})
-                        .clickable(function() {return true})
-                        .tickMultiplier(function() {return 1}),
+                        .clickable(function() {return true}),
                     new BaseAction(self, "Talk to the drunks", "If you can even call that a conversation...")
                         .duration(function()
                         {
@@ -581,10 +607,8 @@ function gameModel()
                         {
                             self.currentTownPlayerPawn = 0;
                         })
-                        .tick(function() { })
                         .visible(function() {return true})
-                        .clickable(function() {return true})
-                        .tickMultiplier(function() {return 1}),
+                        .clickable(function() {return true}),
                 ]),
                 progress:
                 [
