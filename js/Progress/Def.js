@@ -1,20 +1,39 @@
+/** @type {Object.<string, Progress>}*/
 var allProgress = {};
+
+/**
+ * @param {string} name
+ * @param {string} description
+ * @param {TownExplorable[]} items
+ */
 function Progress(name, description, items) {
+    /** @type {Progress}*/
     var self = this;
 
+    /** @type {string}*/
     self.name = name;
+    /** @type {string}*/
     self.description = description;
+    /** @type {TownExplorable[]}*/
     self.items = items;
 
-    allProgress[self.name] = self;
 
+    /** @type {ko.observable}*/
     self.value = ko.observable(0);
+    /** @type {ko.observable}*/
     self.meta = ko.observable(0);
 
     //For storing some functions this object will hold
+    /** @type {Object.<string, Function>}*/
     self._internals = {}
+    /** @type {Object.<string, Function>}*/
     self._defaults = {}
 
+    /**
+     * @param {string} name
+     * @param {Function} [callback]
+     * @returns {Progress}
+     */
     self.setOrRunFunction = function (name, callback) {
         if (typeof (callback) === "function") {
             self._internals[name] = callback;
@@ -27,6 +46,10 @@ function Progress(name, description, items) {
         throw new Error("Invalid use of function '" + name + "'")
     }
 
+    /**
+     * @param {string} name
+     * @returns {Function}
+     */
     self.indirection = function (name) {
         //This weird code here is so that the function has the right name in the end when put out to the console.
         //Nessecary? No. Satisfying? Yeeees.
@@ -38,7 +61,7 @@ function Progress(name, description, items) {
         return tmp[name];
     }
 
-    //Functions that are to be set on a object level, not constructor level.
+    //Functions that are to be set on a object level, not constructor level
     self.visible = self.indirection("visible");
     self.increment = self.indirection("increment");
     self.valueIncrease = self.indirection("valueIncrease");
@@ -67,5 +90,5 @@ function Progress(name, description, items) {
         increment: self.increment,
     }
 
-    allActions[self.name] = self
+    allProgress[self.name] = self;
 }

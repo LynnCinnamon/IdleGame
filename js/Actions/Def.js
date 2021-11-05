@@ -1,13 +1,27 @@
+/** @type {Object.<string, BaseAction>}*/
 var allActions = {}
+
+/**
+ * @param {string} name
+ * @param {string} description
+ */
 function BaseAction(name, description) {
+    /** @type {BaseAction}*/
     var self = this;
+    /** @type {String}*/
     self.name = name;
+    /** @type {String}*/
     self.description = description;
 
     //For storing some functions this object will hold
+    /** @type {Object.<string, Function>}*/
     self._internals = {}
+    /** @type {Object.<string, Function>}*/
     self._defaults = {}
 
+    /**
+     * @returns {string}
+     */
     self.computed_description = function () {
         var string = self.description + "\n\n";
         if (Object.keys(self._stats).length == 0)
@@ -23,6 +37,11 @@ function BaseAction(name, description) {
         return string
     }
 
+    /**
+     * @param {string} name
+     * @param {Function} [callback]
+     * @returns {Progress}
+     */
     self.setOrRunFunction = function (name, callback) {
         if (typeof (callback) === "function") {
             self._internals[name] = callback;
@@ -35,6 +54,10 @@ function BaseAction(name, description) {
         throw new Error("Invalid use of function '" + name + "'")
     }
 
+    /**
+     * @param {string} name
+     * @returns {Function}
+     */
     self.indirection = function (name) {
         //This weird code here is so that the function has the right name in the end when put out to the console.
         //Nessecary? No. Satisfying? Yeeees.
@@ -91,6 +114,7 @@ function BaseAction(name, description) {
     }
 
     self._stats = {};
+
     self.stats = function (s) {
         self._stats = s;
         return self;
@@ -103,10 +127,15 @@ function BaseAction(name, description) {
     allActions[self.name] = self
 }
 
+/**
+ * @param {BaseAction} baseAction
+ * @param {number} amount
+ */
 function Action(baseAction, amount) {
+    /** @type {Action}*/
     var self = this;
 
-    var baseAction = baseAction;
+
     self.name = baseAction.name;
     self.description = baseAction.description;
     self.duration = baseAction.duration;
@@ -122,11 +151,15 @@ function Action(baseAction, amount) {
 
     self.stats = baseAction.stats;
 
+    /** @type {ko.observable}*/
     self.maxAmount = ko.observable(amount);
 
+    /** @type {ko.observable}*/
     self.currentTick = ko.observable(0);
+    /** @type {ko.observable}*/
     self.currentAmount = ko.observable(0);
 
+    /** @type {ko.observable}*/
     self.failed = ko.observable(false);
 
     self.getStaticObject = () => {
