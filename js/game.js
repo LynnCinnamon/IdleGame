@@ -1,47 +1,3 @@
-//Helper functions
-
-
-var obs = {
-    increment: function (observable, amount) {
-        observable(observable() + (amount || 1));
-    },
-}
-
-//From 0-100 -> 1-10
-var logerithmic = function (val) {
-    return ((14) / (1 + Math.exp(-0.003 * 14 * val) * ((14 / 5) - 1))) - 4
-}
-
-/**
- *
- * @param {array} array
- * @param {string} keyname
- * @param {any} value
- */
-var get = function (array, keyname, value) {
-    return array.find(element => element[keyname] === value);
-}
-
-function getFuncName() {
-    return getFuncName.caller.name
-}
-
-var pushUnique = function (array, key) {
-    if (array().includes(key))
-        return
-    array.push(key);
-}
-
-/**
- *
- * @param {gameModel} game
- * @param {string} name
- * @returns
- */
-var town = function (game, name) {
-    return get(game.world.towns, "name", name)
-}
-
 //GLOBAL VARS
 
 var validUnlockables = [
@@ -137,74 +93,9 @@ function gameModel() {
                     allActions["Buy Mana"],
                     allActions["Visit Tavern"],
                 ]),
-                progress: [{
-                    name: "Explored",
-                    value: ko.observable(0),
-                    meta: ko.observable(0),
-                    description: "Exploring the town, you can find many interesting things... Maybe some of them might allow you to have more time per loop?",
-                    visible: function () {
-                        return true;
-                    },
-                    items: [
-                        allExplorables["Pots smashed"],
-                        allExplorables["Pockets looted"],
-                    ],
-                    increment: function () {
-                        if (this.value() >= 100) {
-                            this.value(100);
-                            this.meta(100);
-                            return;
-                        }
-                        obs.increment(this.meta, (100 / (self.world.towns[0].progress[0].value() + 1)));
-                        if (this.meta() >= 100) {
-                            this.meta(0);
-                            obs.increment(this.value);
-                            this.valueIncrease();
-                        }
-                    },
-                    valueIncrease: function () {
-                        var potRessauces = {
-                            1: 5,
-                            5: 5,
-                            10: 5,
-                            20: 5,
-                            25: 5,
-                            30: 5,
-                            35: 5,
-                            40: 5,
-                            45: 5,
-                            50: 5,
-                            55: 5,
-                            60: 5,
-                            65: 5,
-                            70: 5,
-                            75: 5,
-                            80: 5,
-                            85: 5,
-                            90: 5,
-                            95: 5,
-                            100: 5,
-                        }
-                        var pocketRessauces = {
-                            10: 2,
-                            20: 2,
-                            30: 2,
-                            40: 2,
-                            50: 2,
-                            60: 2,
-                            70: 2,
-                            80: 2,
-                            90: 2,
-                            100: 2,
-                        }
-                        if (potRessauces[this.value()]) {
-                            obs.increment(this.items[0].found, potRessauces[this.value()]);
-                        }
-                        if (pocketRessauces[this.value()]) {
-                            obs.increment(this.items[1].found, pocketRessauces[this.value()]);
-                        }
-                    }
-                }]
+                progress: [
+                    allProgress["Explored"],
+                ]
             },
             {
                 name: "The tavern",
@@ -214,34 +105,9 @@ function gameModel() {
                     allActions["Talk to the drunks"],
                     allActions["Investigate a rumor"],
                 ]),
-                progress: [{
-                    name: "Drunks talked to",
-                    value: ko.observable(0),
-                    meta: ko.observable(0),
-                    description: "The conversations are weird but some might prove interesting... No way to find out but to try!",
-                    visible: function () {
-                        return true;
-                    },
-                    items: [
-                        allExplorables["Rumors heared"],
-                    ],
-                    increment: function () {
-                        if (this.value() >= 100) {
-                            this.value(100);
-                            this.meta(100);
-                            return;
-                        }
-                        obs.increment(this.meta, (100 / (this.value() + 1)));
-                        if (this.meta() >= 100) {
-                            this.meta(0);
-                            obs.increment(this.value);
-                            this.valueIncrease();
-                        }
-                    },
-                    valueIncrease: function () {
-                        obs.increment(this.items[0].found);
-                    }
-                }]
+                progress: [
+                    allProgress["Drunks talked to"],
+                ]
             }
         ],
     }
