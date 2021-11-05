@@ -7,7 +7,7 @@
 
 
 <div id="inventory" class="center">
-    <div data-bind="text: currentTicks() + '/' + maxTicks() +  ' ticks | ' + ticksInSeconds() + 's'"></div>
+    <div data-bind="text: currentTicks() + '/' + maxTicks() +  ' Mana | ' + ticksInSeconds() + 's'"></div>
     <div data-bind="text: '&nbsp;| ' + money() + 'g', visible: isUnlocked('FirstGold')"></div>
 </div>
 
@@ -18,6 +18,11 @@
     Wait on failed loop: <input type="checkbox" data-bind="checked: waitOnFail"/>
 </div>
 <div class="center">
+    <button data-bind="click: toggleUseBankedTime" onmouseout="hidePopup(this)" onmouseover="showPopup(this)">Banked Ticks
+        <div class="popup" id="popup" data-bind="style: { top: globalGameModel.mouse.y() + 20, left: globalGameModel.mouse.x() + 20}"
+            ><div data-bind="html: bankedTickText()"></div
+        ></div>
+    </button>
+    <button data-bind="click: toggleStart, text: stopped() && longerStopped() ? 'Start' : 'Stop'"> Default Text</button>
     <button data-bind="click: restart"> Restart!</button>
-    <button data-bind="click: toggleStart, text: stopped() ? 'Start' : 'Stop'"> Restart!</button>
 </div>
