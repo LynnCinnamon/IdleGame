@@ -1,0 +1,190 @@
+var allActions = {}
+function BaseAction(name, description) {
+    var self = this;
+    self.name = name;
+    self.description = description;
+
+    //For storing some functions this object will hold
+    self._internals = {}
+    self._defaults = {}
+
+    self.computed_description = function () {
+        var string = self.description + "\n\n";
+        if (Object.keys(self._stats).length == 0)
+            return string; // We have no stats associated with this Action...
+
+        var sum = 0;
+        Object.keys(self._stats).forEach((key) => {
+            sum += self._stats[key]
+        })
+        Object.keys(self._stats).forEach((key) => {
+            string += key + ": " + (self._stats[key] / sum * 100).toFixed(0) + "%\n";
+        })
+        return string
+    }
+
+    self.setOrRunFunction = function (name, callback) {
+        if (typeof (callback) === "function") {
+            self._internals[name] = callback;
+            return self;
+        }
+        var func = self._internals[name];
+        if (typeof (func) === "function") {
+            return func(self);
+        }
+        throw new Error("Invalid use of function '" + name + "'")
+    }
+
+    self.indirection = function (name) {
+        //This weird code here is so that the function has the right name in the end when put out to the console.
+        //Nessecary? No. Satisfying? Yeeees.
+        const tmp = {
+            [name]: (callback) => {
+                return self.setOrRunFunction(name, callback);
+            }
+        }
+        return tmp[name];
+    }
+
+    //Functions that are to be set on a object level, not constructor level.
+    self.duration = self.indirection("duration");
+    self.finish = self.indirection("finish");
+    self.tick = self.indirection("tick");
+    self.visible = self.indirection("visible");
+    self.clickable = self.indirection("clickable");
+    self.tickMultiplier = self.indirection("tickMultiplier");
+
+    //default implementations
+    self.tick(function (that) {
+        if (typeof (that) === "undefined") return;
+        if (typeof (that._stats) === "undefined") return;
+        if (Object.keys(that._stats).length == 0)
+            return; // We have no stats associated with this Action...
+        var sum = 0;
+        Object.keys(that._stats).forEach((key) => {
+            sum += that._stats[key]
+        })
+        Object.keys(that._stats).forEach((key) => {
+            globalGameModel.getStatByName(key).incrementWithPower(that._stats[key] / sum);
+        })
+    })
+
+    self.tickMultiplier(function (that) {
+        if (typeof (that) === "undefined") return 1;
+        if (typeof (that._stats) === "undefined") return 1;
+        if (Object.keys(that._stats).length == 0)
+            return 1; // We have no stats associated with this Action...
+        var sumStats = 0;
+        Object.keys(that._stats).forEach((key) => {
+            sumStats += that._stats[key]
+        })
+        var sum = 0;
+        Object.keys(that._stats).forEach((key) => {
+            sum += globalGameModel.getStatByName(key).value() * that._stats[key] / sumStats;
+        })
+        return logerithmic(sum);
+    })
+
+    self._defaults = {
+        tick: self.tick,
+        tickMultiplier: self.tickMultiplier,
+    }
+
+    self._stats = {};
+    self.stats = function (s) {
+        self._stats = s;
+        return self;
+    }
+
+    self.addToPool = function () {
+        globalGameModel.nextActions.push(new Action(this, 1))
+    }
+
+    allActions[self.name] = self
+}
+
+function Action(baseAction, amount) {
+    var self = this;
+
+    var baseAction = baseAction;
+    self.name = baseAction.name;
+    self.description = baseAction.description;
+    self.duration = baseAction.duration;
+
+    self._internals = baseAction._internals;
+    self._defaults = baseAction._defaults;
+
+    self.finish = baseAction.finish;
+    self.tick = baseAction.tick;
+    self.visible = baseAction.visible;
+    self.clickable = baseAction.clickable;
+    self.tickMultiplier = baseAction.tickMultiplier;
+
+    self.stats = baseAction.stats;
+
+    self.maxAmount = ko.observable(amount);
+
+    self.currentTick = ko.observable(0);
+    self.currentAmount = ko.observable(0);
+
+    self.failed = ko.observable(false);
+
+    self.getStaticObject = () => {
+        return {
+            name: self.name,
+            amount: self.maxAmount(),
+        }
+    }
+
+    self.canMoveUp = function () {
+        return globalGameModel.nextActions()[0] != self;
+    }
+
+    self.canMoveDown = function () {
+        return globalGameModel.nextActions()[globalGameModel.nextActions().length - 1] != self;
+    }
+
+    self.moveUp = function () {
+        var na = globalGameModel.nextActions;
+        let pos = na.indexOf(self);
+        na.splice(pos, 1, na()[pos - 1]);
+        na.splice(pos - 1, 1, self);
+
+    }
+
+    self.moveDown = function () {
+        var na = globalGameModel.nextActions;
+        let pos = na.indexOf(self);
+        na.splice(pos, 1, na()[pos + 1]);
+        na.splice(pos + 1, 1, self);
+    }
+
+    self.decrementAmount = function () {
+        obs.increment(self.maxAmount, -1);
+    }
+
+    self.incrementAmount = function () {
+        obs.increment(self.maxAmount, 1);
+    }
+
+    self.done = function () {
+        return self.currentAmount() >= self.maxAmount();
+    }
+
+    self.copy = function () {
+        return new Action(baseAction, self.maxAmount());
+    }
+
+    self.doTick = function () {
+        obs.increment(self.currentTick, self.tickMultiplier());
+        self.tick();
+    }
+
+    self.handleOverflow = function () {
+        if (self.currentTick() >= self.duration()) {
+            self.currentTick(0);
+            self.finish();
+            obs.increment(self.currentAmount)
+        }
+    }
+}
