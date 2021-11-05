@@ -1,5 +1,6 @@
-<b>Next Actions</b>
-<div data-bind="foreach: nextActions()">
+<b>Next Actions</b><br> 
+<button data-bind="click: clearNextActions"> Clear List</button>
+<div class="scrollable" data-bind="foreach: nextActions()">
     <div class="action-card">
         <div class="block-container">
             <div data-bind="text: name" style="margin-right: 10px;"></div>

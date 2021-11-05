@@ -14,6 +14,18 @@ html, body
     padding: 10px;
     font-size: 12;
     overflow: hidden;
+    overflow-y: auto !important;
+}
+
+ /* Hide scrollbar for Chrome, Safari and Opera */
+.box::-webkit-scrollbar {
+    display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.box {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
 }
 
 .full-size{
@@ -21,6 +33,9 @@ html, body
     height:100%;
 }
 
+.box{
+    max-height: 100%;
+}
 
 .popup{
     position: fixed;

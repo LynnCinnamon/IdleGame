@@ -581,6 +581,10 @@ function gameModel() {
                     .visible(function () {
                         return true
                     })
+                    .stats({
+                        "Charisma": 70,
+                        "Luck": 30,
+                    })
                     .clickable(function () {
                         return true
                     }),
@@ -588,11 +592,15 @@ function gameModel() {
                     .duration(function () {
                         return 400;
                     })
+                    .stats({
+                        "Perception": 60,
+                        "Intelligence": 40,
+                    })
                     .finish(function () {
                         var action = self.world.towns[1].progress[0];
                         var success = action.items[0].takeAction(10);
                         if (success) {
-                            obs.increment(self.money, 10)
+                            obs.increment(self.money, 30)
                         }
                     })
                     .visible(function () {
@@ -652,6 +660,10 @@ function gameModel() {
 
     self.ticksInSeconds = function () {
         return (self.currentTicks() / 60 / (self.useBankedTicks() ? 4 : 1) ).toFixed(2)
+    }
+
+    self.bankedticksInSeconds = function() {
+        return (self.bankedTicks() / 60).toFixed(2)
     }
 
     self.getStatByName = function (name) {
@@ -762,7 +774,7 @@ function gameModel() {
 
     self.bankedTickText = ko.computed(function () {
         return ["Toggles the usage of your banked ticks.",
-            "You currently have <bold>" + self.bankedTicks().toFixed(0) + " banked ticks</bold>",
+            "You currently have <bold>" + self.bankedTicks().toFixed(0) + " banked ticks (" + (self.bankedticksInSeconds()) + " seconds)</bold>",
             "You gain new ticks at <bold>0.25/t (or 15/second)</bold> while your loop is paused or you are offline.",
             "You may use them to perform loop actions at <bold>4x speed</bold> until they run out.",
             "Your tick usage is turned <bold>" + (self.useBankedTicks() ? "on" : "off") + "</bold>."
@@ -805,6 +817,10 @@ function gameModel() {
         self._tick();
     }
 
+    self.clearNextActions = function(){
+        self.nextActions.removeAll()
+    }
+
     //The main gameloop.
     self._tick = function () {
         self.unlockUnlockables();
@@ -843,7 +859,7 @@ function gameModel() {
         if (!elem && self.repeatLastAction()) {
             elem = self.currentActions()[self.currentActions().length - 1]
         }
-        if (elem) {
+        if (elem && !elem.failed()) {
             if (!self.isCurrentValidAction(elem)) {
                 if (self.actionPointer < self.currentActions().length) {
                     self.actionPointer++;
@@ -891,9 +907,10 @@ function startupLoop() {
         for (let i = 0; i < speedup; i++) {
             try {
                 globalGameModel.tick();
-            } catch {
+            } catch (error) {
                 console.warn("Notbremse gezogen jugnge!");
                 clearInterval(notbremse);
+                console.error(error)
                 break;
             }
         }
@@ -1069,4 +1086,13 @@ var saveGameManager = {
         localStorage.removeItem("SaveGame")
         localStorage.removeItem("LastFailedLoad")
     }
+}
+
+function getActionShareString()
+{
+    var str = ""
+    serializeData(globalGameModel.nextActions()).forEach((e)=>{
+        str += (str === "" ? '' : '\n') + (e.amount + 'x ' + e.name)
+    })
+    return str
 }
