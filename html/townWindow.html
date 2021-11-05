@@ -7,12 +7,21 @@
 </div>
 <div class="town-progress center" data-bind="foreach: world.towns[currentTownDisplay()].progress">
     <div data-bind="visible: visible()">
-        <div data-bind="text: name + ' ' + (value()) + '%'"></div>
-        <div class="progress short">
-            <div class="progress-value light-blue" data-bind="style: { width: (value()) + '%'}"></div>
-        </div>
-        <div class="progress short">
-            <div class="progress-value light-purple" data-bind="style: { width: (meta()) + '%'}"></div>
+        <div onmouseout="hidePopup(this)" onmouseover="showPopup(this)">
+            <div data-bind="text: name + ' ' + (value()) + '%'">
+
+            </div>
+            <!-- ko if: description.length > 0 -->
+            <div class="popup" id="popup" data-bind="style: { top: globalGameModel.mouse.y() + 20, left: globalGameModel.mouse.x() + 20}"
+                ><div data-bind="text: description"></div
+            ></div>
+            <!-- /ko -->
+            <div class="progress short">
+                <div class="progress-value light-blue" data-bind="style: { width: (value()) + '%'}"></div>
+            </div>
+            <div class="progress short">
+                <div class="progress-value light-purple" data-bind="style: { width: (meta()) + '%'}"></div>
+            </div>
         </div>
         <div data-bind="foreach: items">
             <div class="flex" data-bind="visible: total() > 0">
@@ -24,9 +33,9 @@
 </div>
 <div class="action-pool center flex" data-bind="foreach: world.towns[currentTownDisplay()].actions()">
     <div class="action-button" data-bind="visible: visible()" onmouseout="hidePopup(this)" onmouseover="showPopup(this)">
-        <div data-bind="text: name, click: addToPool", style="width: 100%; height: 100%"></div>
+        <div class="center" data-bind="text: name, click: addToPool", style="width: 100%; height: 100%"></div>
         <div class="popup" id="popup" data-bind="style: { top: globalGameModel.mouse.y() + 20, left: globalGameModel.mouse.x() + 20}"
-        ><div data-bind="text: description + '\n\n'"></div
+            ><div data-bind="text: description + '\n\n Base cost: ' + duration() + ' Mana'"></div
             ><table data-bind="foreach: (Object.entries(_stats))"
                 ><tr
                     ><th data-bind="text: $data[0] + ':'">Stat</th
