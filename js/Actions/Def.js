@@ -151,15 +151,15 @@ function Action(baseAction, amount) {
 
     self.stats = baseAction.stats;
 
-    /** @type {ko.observable}*/
+    /** @type {number} ko.observable*/
     self.maxAmount = ko.observable(amount);
 
-    /** @type {ko.observable}*/
+    /** @type {number} ko.observable*/
     self.currentTick = ko.observable(0);
-    /** @type {ko.observable}*/
+    /** @type {number} ko.observable*/
     self.currentAmount = ko.observable(0);
 
-    /** @type {ko.observable}*/
+    /** @type {boolean} ko.observable*/
     self.failed = ko.observable(false);
 
     self.getStaticObject = () => {

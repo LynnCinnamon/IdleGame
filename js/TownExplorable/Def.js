@@ -16,15 +16,15 @@ function TownExplorable(name, id) {
     /** @type {string}*/
     self.id = self.id === undefined ? self.name : self.id;
 
-    /** @type {ko.observable}*/
+    /** @type {number} ko.observable*/
     self.found = ko.observable(0);
-    /** @type {ko.observable}*/
+    /** @type {number} ko.observable*/
     self.withValue = ko.observable(0);
     /** @type {number}*/
     self.withoutValue = 0;
-    /** @type {ko.observable}*/
+    /** @type {number} ko.observable*/
     self.done = ko.observable(0);
-    /** @type {ko.observable}*/
+    /** @type {boolean} ko.observable*/
     self.valueFirst = ko.observable(false);
 
     /**

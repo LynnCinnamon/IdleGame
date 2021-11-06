@@ -15,7 +15,7 @@ function Town(name, actionNames, progressNames) {
     /** @type {string}*/
     self.name = name;
 
-    /** @type {ko.observable}*/
+    /** @type {boolean} ko.observable*/
     self.locked = ko.observable(true);
 
     /** @type {ko.observable[]}*/

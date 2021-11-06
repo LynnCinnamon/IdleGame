@@ -18,9 +18,9 @@ function Progress(name, description, items) {
     self.items = items;
 
 
-    /** @type {ko.observable}*/
+    /** @type {number} ko.observable*/
     self.value = ko.observable(0);
-    /** @type {ko.observable}*/
+    /** @type {number} ko.observable*/
     self.meta = ko.observable(0);
 
     //For storing some functions this object will hold
