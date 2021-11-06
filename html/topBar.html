@@ -1,14 +1,14 @@
 <div id="ticks" class="center">
-    <div class="progress big progress-centered">
+    <div class="progress big progress-centered" data-bind="using: player">
         <div class="progress-value blue" data-bind="style: { width: (currentTicks() * 100 / maxTicks()) + '%'}"></div>
     </div>
 </div>
 
 
 
-<div id="inventory" class="center">
-    <div data-bind="text: currentTicks() + '/' + maxTicks() +  ' Mana | ' + ticksInSeconds() + 's'"></div>
-    <div data-bind="text: '&nbsp;| ' + money() + 'g', visible: isUnlocked('FirstGold')"></div>
+<div id="inventory" class="center" data-bind="using: player">
+    <div data-bind="text: currentTicks() + '/' + maxTicks() +  ' Mana | ' + $root.ticksInSeconds() + 's'"></div>
+    <div data-bind="text: '&nbsp;| ' + money() + 'g', visible: $root.isUnlocked('FirstGold')"></div>
 </div>
 
 

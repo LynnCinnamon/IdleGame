@@ -88,7 +88,7 @@ function BaseAction(name, description) {
             sum += that._stats[key]
         })
         Object.keys(that._stats).forEach((key) => {
-            globalGameModel.getStatByName(key).incrementWithPower(that._stats[key] / sum);
+            allStats[key].incrementWithPower(that._stats[key] / sum);
         })
     })
 
@@ -103,7 +103,7 @@ function BaseAction(name, description) {
         })
         var sum = 0;
         Object.keys(that._stats).forEach((key) => {
-            sum += globalGameModel.getStatByName(key).value() * that._stats[key] / sumStats;
+            sum += allStats[key].value() * that._stats[key] / sumStats;
         })
         return logerithmic(sum);
     })

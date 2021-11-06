@@ -1,16 +1,8 @@
 function GameModel() {
     var self = this;
-    self.stats = ko.observableArray([
-        allStats["Dexterity"],
-        allStats["Strength"],
-        allStats["Constitution"],
-        allStats["Speed"],
-        allStats["Perception"],
-        allStats["Charisma"],
-        allStats["Intelligence"],
-        allStats["Luck"],
-        allStats["Soul"],
-    ]);
+
+    /** @type {Player}*/
+    self.player = new Player();
 
     self.mouse = {
         x: ko.observable(0),
@@ -22,7 +14,6 @@ function GameModel() {
 
     self.currentTownDisplay = ko.observable(0);
     self.currentTownPlayerPawn = 0;
-    self.money = ko.observable(0);
 
     self.currentActions = ko.observableArray([]);
     self.actionPointer = 0;
@@ -46,9 +37,7 @@ function GameModel() {
         ],
     }
 
-    self.startTicks = 250;
-    self.maxTicks = ko.observable(self.startTicks);
-    self.currentTicks = ko.observable(self.startTicks);
+
     self.stopped = ko.observable(true);
     self.longerStopped = ko.observable(false);
 
@@ -63,21 +52,11 @@ function GameModel() {
     self.nextActions = ko.observableArray([]);
 
     self.ticksInSeconds = function () {
-        return (self.currentTicks() / 60 / (self.useBankedTicks() ? 4 : 1) ).toFixed(2)
+        return (self.player.currentTicks() / 60 / (self.useBankedTicks() ? 4 : 1) ).toFixed(2)
     }
 
     self.bankedticksInSeconds = function() {
         return (self.bankedTicks() / 60).toFixed(2)
-    }
-
-    self.getStatByName = function (name) {
-        var finalStat = undefined
-        self.stats().forEach(function (stat) {
-            if (stat.name == name) {
-                finalStat = stat;
-            }
-        });
-        return finalStat;
     }
 
     self.incrementShownTown = function () {
@@ -122,15 +101,13 @@ function GameModel() {
         self.stopped(false);
         self.actionPointer = 0;
         self.longerStopped(false);
-        self.currentTicks(self.startTicks)
-        self.maxTicks(self.startTicks)
         self.currentActions.removeAll()
         self.failedThisLoop = false;
         self.currentTownPlayerPawn = 0;
 
-        saveGameManager.save();
+        self.player.reset()
 
-        self.money(0);
+        saveGameManager.save();
 
         self.world.towns.forEach(function (town) {
             town.progress().forEach(function (prog) {
@@ -141,7 +118,7 @@ function GameModel() {
         })
 
 
-        self.stats().forEach(function (stat) {
+        self.player.stats().forEach(function (stat) {
             stat.value(0)
             stat.valuePercentage(0)
         });
@@ -170,7 +147,7 @@ function GameModel() {
     }
 
     self.unlockUnlockables = function () {
-        if (self.money() > 0) {
+        if (self.player.money() > 0) {
             self.unlock("FirstGold")
         }
     }
@@ -243,7 +220,7 @@ function GameModel() {
             return;
         }
 
-        if (self.currentTicks() <= 0) {
+        if (self.player.currentTicks() <= 0) {
             self.stop()
 
             if (self.waitOnFail()) {
@@ -253,7 +230,7 @@ function GameModel() {
             return;
         }
 
-        self.stats().forEach(function (elem) {
+        self.player.stats().forEach(function (elem) {
             elem.handleOverflow();
         })
 
@@ -268,7 +245,7 @@ function GameModel() {
                 if (self.actionPointer < self.currentActions().length) {
                     self.actionPointer++;
                 }
-                obs.increment(self.currentTicks, -1)
+                obs.increment(self.player.currentTicks, -1)
                 this.failedThisLoop = true;
                 elem.failed(true);
             }
@@ -277,7 +254,7 @@ function GameModel() {
             if (elem.done() && self.actionPointer < self.currentActions().length) {
                 self.actionPointer++;
             }
-            obs.increment(self.currentTicks, -1)
+            obs.increment(self.player.currentTicks, -1)
         }
 
         var runEnded = (self.actionPointer == self.currentActions().length && !self.repeatLastAction());

@@ -105,7 +105,7 @@ var saveGameManager = {
         return JSON.stringify({
             saveTime: new Date(),
             bankedTicks: globalGameModel.bankedTicks(),
-            stats: serializeData(globalGameModel.stats()),
+            stats: serializeData(globalGameModel.player.stats()),
             nextActions: serializeData(globalGameModel.nextActions()),
             towns: saveGameManager.generateTownsSaveObject(globalGameModel.world.towns)
         })
@@ -124,7 +124,7 @@ var saveGameManager = {
         globalGameModel.bankedTicks(saveGame.bankedTicks)
         saveGame.stats.forEach((stat) => {
             debugLog(stat.name + ":");
-            var gameStat = globalGameModel.getStatByName(stat.name);
+            var gameStat = allStats[stat.name];
             debugLog("\tvalue -> " + stat.value)
             gameStat.value(stat.value)
             debugLog("\tmetaValue -> " + stat.metaValue)

@@ -48,7 +48,7 @@ new BaseAction("Loot Pockets", "You need that money more than they do.\nAnd they
         var action = globalGameModel.world.towns[0].progress()[0];
         var success = action.items[1].takeAction(2);
         if (success) {
-            obs.increment(globalGameModel.money, 10)
+            obs.increment(globalGameModel.player.money, 10)
         }
     })
     .stats({
@@ -67,14 +67,14 @@ new BaseAction("Buy Mana", "Can't do anything else with that money... Or can you
         return 10
     })
     .finish(function () {
-        if (globalGameModel.money() > 0) {
-            obs.increment(globalGameModel.currentTicks, globalGameModel.money() * 20);
-            obs.increment(globalGameModel.maxTicks, globalGameModel.money() * 20);
-            globalGameModel.money(0);
+        if (globalGameModel.player.money() > 0) {
+            obs.increment(globalGameModel.currentTicks, globalGameModel.player.money() * 20);
+            obs.increment(globalGameModel.maxTicks, globalGameModel.player.money() * 20);
+            globalGameModel.player.money(0);
         }
     })
     .tick(function () {
-        globalGameModel.getStatByName("Charisma").incrementWithPower(.1);
+        allStats["Charisma"].incrementWithPower(.1);
     })
     .visible(function () {
         return globalGameModel.isUnlocked("FirstGold")
@@ -153,7 +153,7 @@ new BaseAction("Investigate a rumor", "This ought to be interesting")
         var action = globalGameModel.world.towns[1].progress()[0];
         var success = action.items[0].takeAction(10);
         if (success) {
-            obs.increment(globalGameModel.money, 30)
+            obs.increment(globalGameModel.player.money, 30)
         }
     })
     .visible(function () {
