@@ -18,13 +18,13 @@ function Town(name, actionNames, progressNames) {
     /** @type {boolean} ko.observable*/
     self.locked = ko.observable(true);
 
-    /** @type {ko.observable[]}*/
+    /** @type {BaseAction[]} ko.observableArray*/
     self.actions = ko.observableArray([])
     actionNames.forEach((name)=>{
         self.actions.push(allActions[name]);
     })
 
-    /** @type {ko.observable[]}*/
+    /** @type {Progress[]} ko.observableArray*/
     self.progress = ko.observableArray([])
     progressNames.forEach((name)=>{
         self.progress.push(allProgress[name]);
