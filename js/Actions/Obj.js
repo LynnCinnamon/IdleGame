@@ -3,7 +3,7 @@ new BaseAction("Explore", "Take a look around.\nThere must be something to do...
         return 150;
     })
     .finish(function () {
-        globalGameModel.world.towns[0].progress[0].increment();
+        globalGameModel.world.towns[0].progress()[0].increment();
     })
     .stats({
         "Speed": 70,
@@ -22,7 +22,7 @@ new BaseAction("Smash Pots", "Like a particular elf-boy\nIn Some of them might b
         return 50;
     })
     .finish(function () {
-        var action = globalGameModel.world.towns[0].progress[0];
+        var action = globalGameModel.world.towns[0].progress()[0];
         var success = action.items[0].takeAction(5);
         if (success) {
             obs.increment(globalGameModel.currentTicks, 100)
@@ -34,10 +34,10 @@ new BaseAction("Smash Pots", "Like a particular elf-boy\nIn Some of them might b
         "Constitution": 50,
     })
     .visible(function () {
-        return globalGameModel.world.towns[0].progress[0].items[0].total() > 0
+        return globalGameModel.world.towns[0].progress()[0].items[0].total() > 0
     })
     .clickable(function () {
-        return globalGameModel.world.towns[0].progress[0].items[0].total() > 0
+        return globalGameModel.world.towns[0].progress()[0].items[0].total() > 0
     })
 
 new BaseAction("Loot Pockets", "You need that money more than they do.\nAnd they will forget next loop anyway.")
@@ -45,7 +45,7 @@ new BaseAction("Loot Pockets", "You need that money more than they do.\nAnd they
         return 50;
     })
     .finish(function () {
-        var action = globalGameModel.world.towns[0].progress[0];
+        var action = globalGameModel.world.towns[0].progress()[0];
         var success = action.items[1].takeAction(2);
         if (success) {
             obs.increment(globalGameModel.money, 10)
@@ -56,10 +56,10 @@ new BaseAction("Loot Pockets", "You need that money more than they do.\nAnd they
         "Luck": 50,
     })
     .visible(function () {
-        return globalGameModel.world.towns[0].progress[0].items[1].total() > 0
+        return globalGameModel.world.towns[0].progress()[0].items[1].total() > 0
     })
     .clickable(function () {
-        return globalGameModel.world.towns[0].progress[0].items[1].total() > 0
+        return globalGameModel.world.towns[0].progress()[0].items[1].total() > 0
     })
 
 new BaseAction("Buy Mana", "Can't do anything else with that money... Or can you?\n1G -> 20 Mana")
@@ -100,10 +100,10 @@ new BaseAction("Visit Tavern", "Hey, you deserve a break too, right?\n(New Area)
 
     })
     .visible(function () {
-        return globalGameModel.world.towns[0].progress[0].value() >= 15
+        return globalGameModel.world.towns[0].progress()[0].value() >= 15
     })
     .clickable(function () {
-        return globalGameModel.world.towns[0].progress[0].value() >= 15
+        return globalGameModel.world.towns[0].progress()[0].value() >= 15
     })
 
 
@@ -128,7 +128,7 @@ new BaseAction("Talk to the drunks", "Maybe they have something interesting...")
         return 100;
     })
     .finish(function () {
-        globalGameModel.world.towns[1].progress[0].increment();
+        globalGameModel.world.towns[1].progress()[0].increment();
     })
     .visible(function () {
         return true
@@ -150,15 +150,15 @@ new BaseAction("Investigate a rumor", "This ought to be interesting")
         "Intelligence": 40,
     })
     .finish(function () {
-        var action = globalGameModel.world.towns[1].progress[0];
+        var action = globalGameModel.world.towns[1].progress()[0];
         var success = action.items[0].takeAction(10);
         if (success) {
             obs.increment(globalGameModel.money, 30)
         }
     })
     .visible(function () {
-        return globalGameModel.world.towns[1].progress[0].items[0].total() > 0
+        return globalGameModel.world.towns[1].progress()[0].items[0].total() > 0
     })
     .clickable(function () {
-        return globalGameModel.world.towns[1].progress[0].items[0].total() > 0
+        return globalGameModel.world.towns[1].progress()[0].items[0].total() > 0
     })

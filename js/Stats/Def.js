@@ -1,3 +1,5 @@
+/** @type {Object.<string, Stat>}*/
+var allStats = {};
 
 function Stat(name) {
     /** @type {Stat}*/
@@ -41,4 +43,5 @@ function Stat(name) {
             obs.increment(self.value)
         }
     }
+    allStats[self.name] = self;
 }

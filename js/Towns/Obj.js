@@ -10,3 +10,15 @@ new Town("A small village",
         "Explored",
     ]
 ).locked(false);
+
+
+new Town("The tavern",
+    [
+        "Leave Tavern",
+        "Talk to the drunks",
+        "Investigate a rumor",
+    ],
+    [
+        "Drunks talked to",
+    ]
+)
