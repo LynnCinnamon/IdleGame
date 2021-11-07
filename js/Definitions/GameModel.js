@@ -1,3 +1,9 @@
+/**
+ * @typedef {import('./Player')}
+ */
+
+
+
 function GameModel() {
     var self = this;
 
@@ -8,6 +14,7 @@ function GameModel() {
         x: ko.observable(0),
         y: ko.observable(0)
     }
+
 
     self.bankedTicks = ko.observable(0);
     self.useBankedTicks = ko.observable(false);
