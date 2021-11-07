@@ -25,8 +25,8 @@ new BaseAction("Smash Pots", "Like a particular elf-boy\nIn Some of them might b
         var action = globalGameModel.world.towns[0].progress()[0];
         var success = action.items[0].takeAction(5);
         if (success) {
-            obs.increment(globalGameModel.currentTicks, 100)
-            obs.increment(globalGameModel.maxTicks, 100)
+            obs.increment(globalGameModel.player.currentTicks, 100)
+            obs.increment(globalGameModel.player.maxTicks, 100)
         }
     })
     .stats({
@@ -68,8 +68,8 @@ new BaseAction("Buy Mana", "Can't do anything else with that money... Or can you
     })
     .finish(function () {
         if (globalGameModel.player.money() > 0) {
-            obs.increment(globalGameModel.currentTicks, globalGameModel.player.money() * 20);
-            obs.increment(globalGameModel.maxTicks, globalGameModel.player.money() * 20);
+            obs.increment(globalGameModel.player.currentTicks, globalGameModel.player.money() * 20);
+            obs.increment(globalGameModel.player.maxTicks, globalGameModel.player.money() * 20);
             globalGameModel.player.money(0);
         }
     })
