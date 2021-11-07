@@ -162,6 +162,12 @@ function Action(baseAction, amount) {
     /** @type {boolean} ko.observable*/
     self.failed = ko.observable(false);
 
+    self.reset = ()=>{
+        self.currentTick(0)
+        self.currentAmount(0)
+        self.failed(false)
+    }
+
     self.getStaticObject = () => {
         return {
             name: self.name,

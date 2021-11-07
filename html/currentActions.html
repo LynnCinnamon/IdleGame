@@ -1,7 +1,7 @@
 <b>Current Actions</b>
 <div class="flex">
-    Repeat last action on list:
-    <input type="checkbox" data-bind="checked: repeatLastAction">
+    Repeat last action on list: <input type="checkbox" data-bind="checked: repeatLastAction">
+    Keep current Actions list: <input type="checkbox" data-bind="checked: keepCurrentActions">
 </div>
 <div class="scrollable" data-bind="foreach: currentActions()">
     <div class="action-card" data-bind="visible: maxAmount() > 0">

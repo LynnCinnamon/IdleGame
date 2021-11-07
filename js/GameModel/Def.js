@@ -44,6 +44,7 @@ function GameModel() {
     self.waitBeforeRestart = ko.observable(false);
     self.waitOnFail = ko.observable(false);
     self.repeatLastAction = ko.observable(false);
+    self.keepCurrentActions = ko.observable(false);
 
     self.inTown = function (num) {
         return self.currentTownDisplay() == num
@@ -101,7 +102,6 @@ function GameModel() {
         self.stopped(false);
         self.actionPointer = 0;
         self.longerStopped(false);
-        self.currentActions.removeAll()
         self.failedThisLoop = false;
         self.currentTownPlayerPawn = 0;
 
@@ -122,10 +122,20 @@ function GameModel() {
             stat.value(0)
             stat.valuePercentage(0)
         });
-
-        self.nextActions().forEach(function (ac) {
-            self.currentActions.push(ac.copy())
-        })
+        if(self.keepCurrentActions() && self.currentActions().length > 0)
+        {
+            self.currentActions().forEach((action)=>{
+                action.reset()
+            })
+        }
+        else {
+            self.currentActions.removeAll()
+            self.nextActions().forEach(function (ac) {
+                if(ac.maxAmount() <=0 )
+                return
+                self.currentActions.push(ac.copy())
+            })
+        }
     }
 
     self.removeCurrentAction = function (data) {
