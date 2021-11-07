@@ -1,4 +1,23 @@
+/**
+ * @typedef {import('./Definitions/Action.js')}
+ * @typedef {import('./Definitions/GameModel.js')}
+ * @typedef {import('./Definitions/Player.js')}
+ * @typedef {import('./Definitions/Progress.js')}
+ * @typedef {import('./Definitions/Stat.js')}
+ * @typedef {import('./Definitions/TownExplorable.js')}
+ * @typedef {import('./Definitions/Town.js')}
+ *
+ * @typedef {import('./Objects/TownExplorables.js')}
+ * @typedef {import('./Objects/Actions.js')}
+ * @typedef {import('./Objects/Progress.js')}
+ * @typedef {import('./Objects/Stats.js')}
+ * @typedef {import('./Objects/Towns.js')}
+ */
+
+
 //GLOBAL VARS
+
+
 
 var validUnlockables = [
     "FirstGold"
