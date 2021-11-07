@@ -46,8 +46,30 @@ new Progress("Explored", "Exploring the town, you can find many interesting thin
 })
 
 new Progress("Drunks talked to", "The conversations are weird but some might prove interesting... No way to find out but to try!", [
-    allExplorables["Rumors heared"]
+    allExplorables["Rumors heared"],
 ]).valueIncrease((that) =>
 {
     obs.increment(that.items[0].found);
+})
+
+new Progress("Odd things noticed", "You knew there was merit in talking to the drunks!\n<bold>This speeds up with a higher \"Drunks talked to\" value!</bold>", [
+
+]).valueIncrease((that) =>
+{
+})
+.visible(()=>
+{
+    return allProgress["Drunks talked to"].value() >= 20;
+}).increment(function (that) {
+    if (that.value() >= 100) {
+        that.value(100);
+        that.meta(100);
+        return;
+    }
+    obs.increment(that.meta, allProgress["Drunks talked to"].value() / 20 * (100 / (that.value() + 1)));
+    if (that.meta() >= 100) {
+        that.meta(0);
+        obs.increment(that.value);
+        that.valueIncrease();
+    }
 })

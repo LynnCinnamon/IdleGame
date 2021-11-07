@@ -27,6 +27,14 @@ function TownExplorable(name, id) {
     /** @type {boolean} ko.observable*/
     self.valueFirst = ko.observable(false);
 
+    self.computedDescription = ko.computed(function () {
+        return [
+            "These are your <bold>" + name + "</bold>",
+            "They display in the following format:",
+            "<bold>Amount with value left / Amount with value total / Amount to check for value</bold>",
+        ].join("\n");
+    })
+
     /**
      * @returns {number}
      */

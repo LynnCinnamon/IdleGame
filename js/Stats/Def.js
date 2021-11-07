@@ -1,11 +1,13 @@
 /** @type {Object.<string, Stat>}*/
 var allStats = {};
 
-function Stat(name) {
+function Stat(name, flavourText) {
     /** @type {Stat}*/
     var self = this;
     /** @type {string}*/
     self.name = name
+    /** @type {string}*/
+    self.flavourText = flavourText;
     /** @type {number} ko.observable*/
     self.value = ko.observable(1);
     /** @type {number} ko.observable*/
@@ -24,6 +26,17 @@ function Stat(name) {
             metaValuePercentage: self.metaValuePercentage()
         }
     }
+
+    self.computedDescription = ko.computed(function () {
+        return [
+            "This is your <bold>" + name + "</bold>",
+            "Level (main): " + self.value(),
+            "Percentage (main): " + self.valuePercentage().toFixed(0),
+            "Level (meta): " + self.metaValue(),
+            "Percentage (meta): " + self.metaValuePercentage().toFixed(2),
+            self.flavourText,
+        ].join("\n");
+    })
 
     /**
      * @param {number} power

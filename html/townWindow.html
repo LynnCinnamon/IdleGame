@@ -7,13 +7,13 @@
 </div>
 <div class="town-progress center" data-bind="foreach: world.towns[currentTownDisplay()].progress">
     <div data-bind="visible: visible()">
-        <div onmouseout="hidePopup(this)" onmouseover="showPopup(this)">
+        <div class="center town-progress" onmouseout="hidePopup(this)" onmouseover="showPopup(this)">
             <div data-bind="text: name + ' ' + (value()) + '%'">
 
             </div>
             <!-- ko if: description.length > 0 -->
             <div class="popup" id="popup" data-bind="style: { top: globalGameModel.mouse.y() + 20, left: globalGameModel.mouse.x() + 20}"
-                ><div data-bind="text: description"></div
+                ><div data-bind="html: description"></div
             ></div>
             <!-- /ko -->
             <div class="progress short">
@@ -25,8 +25,11 @@
         </div>
         <div data-bind="foreach: items">
             <div class="flex" data-bind="visible: total() > 0">
-                <div data-bind="text: name + ' ' + done() + '/' + withValue() + '/'+ found()"></div>
-                <input type="checkbox" data-bind="checked: valueFirst"/> Lootable first
+                <div onmouseout="hidePopup(this)" onmouseover="showPopup(this)", class="flex">
+                    <div data-bind="text: name + ' ' + withValue() + '/' + (withValue() + done()) + '/'+ found()"></div>
+                    <input type="checkbox" data-bind="checked: valueFirst"/> Lootable first
+                    <div class="popup" id="popup" data-bind="style: { top: globalGameModel.mouse.y() + 20, left: globalGameModel.mouse.x() + 20}, html: computedDescription()"></div>
+                </div>
             </div>
         </div>
     </div>

@@ -48,7 +48,7 @@ html, body
     border-color: black;
     border-width: 3px;
     border-style: solid;
-    max-width: 400px;
+    max-width: 600px;
     white-space: pre-wrap;
     z-index: 9999999999999;
 }
@@ -171,4 +171,8 @@ html, body
     text-align: center;
 
     cursor: pointer;
+}
+
+.town-progress{
+    flex-direction: column;
 }

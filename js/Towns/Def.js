@@ -27,7 +27,16 @@ function Town(name, actionNames, progressNames) {
     /** @type {Progress[]} ko.observableArray*/
     self.progress = ko.observableArray([])
     progressNames.forEach((name)=>{
-        self.progress.push(allProgress[name]);
+        if(allProgress[name])
+        {
+            self.progress.push(allProgress[name]);
+        }
+        else
+        {
+            console.log(allProgress)
+            console.log(name)
+            console.log(allProgress[name])
+        }
     })
 
 

@@ -141,7 +141,7 @@ new BaseAction("Talk to the drunks", "Maybe they have something interesting...")
         return true
     })
 
-new BaseAction("Investigate a rumor", "This ought to be interesting")
+    new BaseAction("Investigate a rumor", "This ought to be interesting")
     .duration(function () {
         return 400;
     })
@@ -161,4 +161,22 @@ new BaseAction("Investigate a rumor", "This ought to be interesting")
     })
     .clickable(function () {
         return globalGameModel.world.towns[1].progress()[0].items[0].total() > 0
+    })
+
+new BaseAction("Notice somthing odd", "You can't quite put yout finger on it. But something's wrong...")
+    .duration(function () {
+        return 400;
+    })
+    .stats({
+        "Perception": 60,
+        "Intelligence": 40,
+    })
+    .finish(function () {
+        globalGameModel.world.towns[1].progress()[1].increment();
+    })
+    .visible(function () {
+        return allProgress["Drunks talked to"].value() >= 20
+    })
+    .clickable(function () {
+        return allProgress["Drunks talked to"].value() >= 20
     })

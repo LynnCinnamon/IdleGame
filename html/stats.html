@@ -1,5 +1,5 @@
 <div data-bind="foreach: player.stats">
-    <div>
+    <div onmouseout="hidePopup(this)" onmouseover="showPopup(this)", class="flex">
         <div data-bind="text: name + ': ' + value() + ' (' + metaValue() + ')'">DEFAULT VALUE HERE</div>
         <div class="progress">
             <div class="progress-value" data-bind="style: { width: valuePercentage() + '%'}"></div>
@@ -7,5 +7,6 @@
         <div class="progress">
             <div class="progress-value" data-bind="style: { width: metaValuePercentage() + '%'}"></div>
         </div>
+        <div class="popup" id="popup" data-bind="style: { top: globalGameModel.mouse.y() + 20, left: globalGameModel.mouse.x() + 20}, html: computedDescription()"></div>
     </div>
 </div>
