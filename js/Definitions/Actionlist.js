@@ -1,33 +1,107 @@
 class ActionList {
     constructor() {
-        /** @type {ActionList}*/
         var self = this;
-        /**@type {Action[]} observable*/
         self.actions = ko.observableArray([]);
         self.actionPointer = 0;
         self.collapsed = ko.observable(false);
-        /** @type {number} ko.observable*/
         self.currentAmount = ko.observable(0);
-        /** @type {boolean} ko.observable*/
         self.failed = ko.observable(false);
-        /** @returns {number} */
+        self.doMoveDown = (action) => {
+            var na = self.actions;
+            let pos = na.indexOf(action);
+            if (pos > -1) {
+                na.splice(pos, 1, na()[pos + 1]);
+                na.splice(pos + 1, 1, action);
+            }
+            else {
+                self.actions().forEach((action) => {
+                    if (action instanceof ActionList) {
+                        action.doMoveDown(action);
+                    }
+                });
+            }
+        };
+        self.doMoveUp = (action) => {
+            var na = self.actions;
+            let pos = na.indexOf(action);
+            if (pos > 0) {
+                na.splice(pos, 1, na()[pos - 1]);
+                na.splice(pos - 1, 1, action);
+                return;
+            }
+            else {
+                self.actions().forEach((action) => {
+                    if (action instanceof ActionList) {
+                        action.doMoveUp(action);
+                    }
+                });
+            }
+        };
         self.maxAmount = () => {
             return self.actions().reduce((tally, current) => { return tally + current.maxAmount(); }, 0);
         };
         self.canMoveUp = function () {
-            return globalGameModel.nextActions()[0] != self;
+            var first = globalGameModel.nextActions()[0];
+            if (first != self)
+                return true;
+            if (first instanceof ActionList) {
+                return first.mayMoveUp(self);
+            }
+            return false;
         };
         self.canMoveDown = function () {
-            return globalGameModel.nextActions()[globalGameModel.nextActions().length - 1] != self;
+            var last = globalGameModel.nextActions()[globalGameModel.nextActions().length - 1];
+            if (last != self)
+                return true;
+            if (last instanceof ActionList) {
+                return last.mayMoveDown(self);
+            }
+            return false;
+        };
+        self.mayMoveUp = function (action) {
+            if (self.actions()[0] == action)
+                return false;
+            return self.actions().reduce((tally, current) => {
+                if (tally)
+                    return tally;
+                if (current == action)
+                    return true;
+                if (current instanceof ActionList) {
+                    return current.mayMoveUp(action);
+                }
+            }, false);
+        };
+        self.mayMoveDown = function (action) {
+            if (self.actions()[self.actions().length - 1] == action)
+                return false;
+            return self.actions().reduce((tally, current) => {
+                if (tally)
+                    return tally;
+                if (current == action)
+                    return true;
+                if (current instanceof ActionList) {
+                    return current.mayMoveDown(action);
+                }
+            }, false);
         };
         self.hasAction = function (action) {
-            return self.actions().reduce((tally, current) => { return tally || current == action || current.hasAction(action); }, false);
+            return self.actions().reduce((tally, current) => {
+                if (tally)
+                    return tally;
+                if (current == action)
+                    return true;
+                if (action instanceof ActionList) {
+                    return action.hasAction(action);
+                }
+            }, false);
         };
         self.removeAction = function (action) {
-            var index = self.actions.indexOf(action);
-            if (index > -1) {
-                self.actions.splice(index, 1);
-            }
+            self.actions.remove(action);
+            self.actions().forEach((elem) => {
+                if (elem instanceof ActionList) {
+                    elem.removeAction(action);
+                }
+            });
         };
         self.moveUp = function () {
             var na = globalGameModel.nextActions;
@@ -67,16 +141,18 @@ class ActionList {
                 var elem = self.actions()[self.actionPointer];
             }
             if (elem && !elem.failed()) {
-                if (false && !self.isCurrentValidAction(elem)) {
+                if (!elem.isCurrentValidAction()) {
                     if (self.actionPointer < self.actions().length) {
                         self.actionPointer++;
                     }
-                    obs.increment(self.player.currentTicks, -1);
+                    obs.increment(globalGameModel.player.currentTicks, -1);
                     this.failedThisLoop = true;
                     elem.failed(true);
                 }
-                elem.doTick();
-                elem.handleOverflow();
+                else {
+                    elem.doTick();
+                    elem.handleOverflow();
+                }
                 if (elem.done() && self.actionPointer < self.actions().length) {
                     self.actionPointer++;
                 }
@@ -107,8 +183,19 @@ class ActionList {
                 children: array
             };
         };
-    }
-    isCurrentValidAction(elem) {
-        throw new Error("Method not implemented.");
+        self.includesAction = function (action) {
+            self.actions().forEach((elem) => {
+                if (elem == action)
+                    return true;
+                if (elem instanceof ActionList) {
+                    if (elem.includesAction(action))
+                        return true;
+                }
+            });
+            return false;
+        };
+        self.isCurrentValidAction = function () {
+            return true;
+        };
     }
 }

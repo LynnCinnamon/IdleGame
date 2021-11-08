@@ -13,7 +13,7 @@ class GameModel {
     currentActions: KnockoutObservableArray<any>;
     actionPointer: number;
     unlockables: KnockoutObservableArray<any>;
-    isCurrentValidAction: (action: any) => boolean;
+    isCurrentValidAction: (action: Action|ActionList) => boolean;
     world: any;
     stopped: KnockoutObservable<boolean>;
     longerStopped: KnockoutObservable<boolean>;
@@ -22,7 +22,7 @@ class GameModel {
     repeatLastAction: KnockoutObservable<boolean>;
     keepCurrentActions: KnockoutObservable<boolean>;
     inTown: (num: any) => boolean;
-    nextActions: KnockoutObservableArray<any>;
+    nextActions: KnockoutObservableArray<Action|ActionList>;
     ticksInSeconds: () => string;
     bankedticksInSeconds: () => string;
     incrementShownTown: () => void;
@@ -41,6 +41,9 @@ class GameModel {
     tick: () => void;
     clearNextActions: () => void;
     insertActionList: () => void;
+    stop: { (): void; (): void; }
+    unlock: Function
+    _tick: { (): void; (): void; }
     constructor() {
         var self = this;
 
@@ -64,11 +67,8 @@ class GameModel {
 
         self.unlockables = ko.observableArray([]);
 
-        /**
-         *
-         * @param {Action} action
-         */
-        self.isCurrentValidAction = function (action) {
+
+        self.isCurrentValidAction = function (action: Action|ActionList) {
             var name = action.name;
             var town = self.world.towns[this.currentTownPlayerPawn];
             return town.actions().find(element => element.name === name) != undefined;
@@ -186,10 +186,22 @@ class GameModel {
 
         self.removeCurrentAction = function (data) {
             self.currentActions.remove(data);
+            self.currentActions().forEach((elem)=>{
+                if(elem instanceof ActionList)
+                {
+                    elem.removeAction(data)
+                }
+            })
         };
 
         self.removeNextAction = function (data) {
             self.nextActions.remove(data);
+            self.nextActions().forEach((elem)=>{
+                if(elem instanceof ActionList)
+                {
+                    elem.removeAction(data)
+                }
+            })
         };
 
 
@@ -301,7 +313,7 @@ class GameModel {
                 elem = self.currentActions()[self.currentActions().length - 1];
             }
             if (elem && !elem.failed()) {
-                if (!self.isCurrentValidAction(elem)) {
+                if (!elem.isCurrentValidAction()) {
                     if (self.actionPointer < self.currentActions().length) {
                         self.actionPointer++;
                     }
@@ -329,14 +341,5 @@ class GameModel {
             }
         };
 
-    }
-    stop() {
-        throw new Error("Method not implemented.");
-    }
-    unlock(arg0: string) {
-        throw new Error("Method not implemented.");
-    }
-    _tick() {
-        throw new Error("Method not implemented.");
     }
 }

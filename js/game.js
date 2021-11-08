@@ -26,7 +26,7 @@ function startupLoop() {
         }
     }, 1000 / 60);
 }
-$("body").mousemove(function (e) {
+$("body").on("mousemove", function (e) {
     globalGameModel.mouse.x(e.pageX);
     globalGameModel.mouse.y(e.pageY);
 });
@@ -85,18 +85,19 @@ var saveGameManager = {
         return array;
     },
     generateSaveGameFile: () => {
-        return JSON.stringify({
-            saveTime: new Date(),
+        var saveGame = {
+            saveTime: new Date().getTime(),
             bankedTicks: globalGameModel.bankedTicks(),
             stats: serializeData(globalGameModel.player.stats()),
             nextActions: serializeData(globalGameModel.nextActions()),
             towns: saveGameManager.generateTownsSaveObject(globalGameModel.world.towns)
-        });
+        };
+        return JSON.stringify(saveGame);
     },
     loadSaveGameFile: (saveGame) => {
         var now = new Date();
-        var then = new Date(saveGame.saveTime);
-        var diff = now.getTime() - then.getTime();
+        var then = saveGame.saveTime;
+        var diff = now.getTime() - then;
         var seconds = parseInt(diff / 1000 + '');
         var offlineTicks = seconds * 15;
         saveGame.bankedTicks += offlineTicks;
@@ -105,12 +106,8 @@ var saveGameManager = {
         saveGame.stats.forEach((stat) => {
             debugLog(stat.name + ":");
             var gameStat = allStats[stat.name];
-            debugLog("\tvalue -> " + stat.value);
-            gameStat.value(stat.value);
             debugLog("\tmetaValue -> " + stat.metaValue);
             gameStat.metaValue(stat.metaValue);
-            debugLog("\tvaluePercentage -> " + stat.valuePercentage);
-            gameStat.valuePercentage(stat.valuePercentage);
             debugLog("\tmetaValuePercentage -> " + stat.metaValuePercentage);
             gameStat.metaValuePercentage(stat.metaValuePercentage);
         });

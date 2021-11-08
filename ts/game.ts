@@ -36,7 +36,7 @@ function startupLoop() {
     }, 1000 / 60)
 }
 
-$("body").mousemove(function (e) {
+$("body").on("mousemove", function (e) {
     globalGameModel.mouse.x(e.pageX);
     globalGameModel.mouse.y(e.pageY);
 })
@@ -63,6 +63,44 @@ function serializeData(givenArray) {
 function debugLog(obj)
 {
     //console.log(obj);
+}
+
+type SaveGameAction = {
+    name:string,
+    amount:number,
+}
+type SaveGameProgressItem = {
+    name:string,
+    found:number,
+    withValue:number,
+    withoutValue:number,
+    done:number,
+    valueFirst:boolean,
+}
+type SaveGameProgress = {
+    name:string,
+    value:number,
+    meta:number,
+    items:SaveGameProgressItem[],
+}
+type SaveGameTown = {
+    name:string,
+    locked:boolean,
+    progress:SaveGameProgress[],
+}
+type SaveGameStat = {
+    name:string,
+    value:number,
+    valuePercentage:number,
+    metaValue:number,
+    metaValuePercentage:number,
+}
+type SaveGame = {
+    saveTime:number,
+    bankedTicks:number,
+    stats:SaveGameStat[],
+    nextActions:SaveGameAction[],
+    towns:SaveGameTown[],
 }
 
 var saveGameManager = {
@@ -104,19 +142,20 @@ var saveGameManager = {
         return array;
     },
     generateSaveGameFile: () => {
-        return JSON.stringify({
-            saveTime: new Date(),
+        var saveGame :SaveGame = {
+            saveTime: new Date().getTime(),
             bankedTicks: globalGameModel.bankedTicks(),
             stats: serializeData(globalGameModel.player.stats()),
             nextActions: serializeData(globalGameModel.nextActions()),
             towns: saveGameManager.generateTownsSaveObject(globalGameModel.world.towns)
-        })
+        }
+        return JSON.stringify(saveGame)
     },
-    loadSaveGameFile: (saveGame) => {
+    loadSaveGameFile: (saveGame: SaveGame) => {
 
         var now = new Date();
-        var then = new Date(saveGame.saveTime);
-        var diff = now.getTime()-then.getTime()
+        var then = saveGame.saveTime;
+        var diff = now.getTime()-then
         var seconds = parseInt(diff/1000+'');
         var offlineTicks = seconds * 15;
 
@@ -127,12 +166,8 @@ var saveGameManager = {
         saveGame.stats.forEach((stat) => {
             debugLog(stat.name + ":");
             var gameStat = allStats[stat.name];
-            debugLog("\tvalue -> " + stat.value)
-            gameStat.value(stat.value)
             debugLog("\tmetaValue -> " + stat.metaValue)
             gameStat.metaValue(stat.metaValue)
-            debugLog("\tvaluePercentage -> " + stat.valuePercentage)
-            gameStat.valuePercentage(stat.valuePercentage)
             debugLog("\tmetaValuePercentage -> " + stat.metaValuePercentage)
             gameStat.metaValuePercentage(stat.metaValuePercentage)
         })

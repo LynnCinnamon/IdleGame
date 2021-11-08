@@ -16,10 +16,6 @@ class GameModel {
         self.currentActions = ko.observableArray([]);
         self.actionPointer = 0;
         self.unlockables = ko.observableArray([]);
-        /**
-         *
-         * @param {Action} action
-         */
         self.isCurrentValidAction = function (action) {
             var name = action.name;
             var town = self.world.towns[this.currentTownPlayerPawn];
@@ -117,9 +113,19 @@ class GameModel {
         };
         self.removeCurrentAction = function (data) {
             self.currentActions.remove(data);
+            self.currentActions().forEach((elem) => {
+                if (elem instanceof ActionList) {
+                    elem.removeAction(data);
+                }
+            });
         };
         self.removeNextAction = function (data) {
             self.nextActions.remove(data);
+            self.nextActions().forEach((elem) => {
+                if (elem instanceof ActionList) {
+                    elem.removeAction(data);
+                }
+            });
         };
         //Stops the loop from executing.
         //The tick function continues to fire!
@@ -214,7 +220,7 @@ class GameModel {
                 elem = self.currentActions()[self.currentActions().length - 1];
             }
             if (elem && !elem.failed()) {
-                if (!self.isCurrentValidAction(elem)) {
+                if (!elem.isCurrentValidAction()) {
                     if (self.actionPointer < self.currentActions().length) {
                         self.actionPointer++;
                     }
@@ -240,14 +246,5 @@ class GameModel {
                 }
             }
         };
-    }
-    stop() {
-        throw new Error("Method not implemented.");
-    }
-    unlock(arg0) {
-        throw new Error("Method not implemented.");
-    }
-    _tick() {
-        throw new Error("Method not implemented.");
     }
 }

@@ -17,12 +17,6 @@ var obs = {
 var logerithmic = function (val) {
     return ((14) / (1 + Math.exp(-0.003 * 14 * val) * ((14 / 5) - 1))) - 4;
 };
-/**
- *
- * @param {array} array
- * @param {string} keyname
- * @param {any} value
- */
 var get = function (array, keyname, value) {
     return array.find(element => element[keyname] === value);
 };

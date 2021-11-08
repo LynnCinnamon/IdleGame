@@ -153,25 +153,56 @@ class BaseAction {
  * @param {BaseAction} baseAction
  * @param {number} amount
  */
-function Action(baseAction, amount) {
-    /** @type {Action}*/
-    var self = this;
+class Action{
+    name: any;
+    description: any;
+    duration: any;
+    _internals: any;
+    _defaults: any;
+    finish: any;
+    tick: any;
+    visible: any;
+    clickable: any;
+    tickMultiplier: any;
+    stats: any;
+    maxAmount: KnockoutObservable<any>;
+    currentTick: KnockoutObservable<number>;
+    currentAmount: KnockoutObservable<number>;
+    failed: KnockoutObservable<boolean>;
+    reset: () => void;
+    getStaticObject: () => { name: any; amount: any; };
+    canMoveUp: () => boolean;
+    canMoveDown: () => boolean;
+    moveUp: () => void;
+    moveDown: () => void;
+    decrementAmount: () => void;
+    incrementAmount: () => void;
+    done: () => boolean;
+    copy: () => Action;
+    doTick: () => void;
+    handleOverflow: () => void;
+    isCurrentValidAction: () => boolean;
+    constructor(baseAction, amount)
+    {
+
+        /** @type {Action}*/
+        var self = this;
 
 
-    self.name = baseAction.name;
-    self.description = baseAction.description;
-    self.duration = baseAction.duration;
+        self.name = baseAction.name;
+        self.description = baseAction.description;
+        self.duration = baseAction.duration;
 
-    self._internals = baseAction._internals;
-    self._defaults = baseAction._defaults;
+        self._internals = baseAction._internals;
+        self._defaults = baseAction._defaults;
 
-    self.finish = baseAction.finish;
-    self.tick = baseAction.tick;
-    self.visible = baseAction.visible;
-    self.clickable = baseAction.clickable;
-    self.tickMultiplier = baseAction.tickMultiplier;
+        self.finish = baseAction.finish;
+        self.tick = baseAction.tick;
+        self.visible = baseAction.visible;
+        self.clickable = baseAction.clickable;
+        self.tickMultiplier = baseAction.tickMultiplier;
 
-    self.stats = baseAction.stats;
+        self.stats = baseAction.stats;
 
     /** @type {number} ko.observable*/
     self.maxAmount = ko.observable(amount);
@@ -198,26 +229,70 @@ function Action(baseAction, amount) {
     }
 
     self.canMoveUp = function () {
-        return globalGameModel.nextActions()[0] != self;
+        var first = globalGameModel.nextActions()[0];
+        if(first != self) {
+            var may = false;
+            globalGameModel.nextActions().forEach((elem)=>{
+                if(elem instanceof ActionList)
+                {
+                    may = may || elem.mayMoveUp(self);
+                }
+            })
+        };
+        return may;
     }
 
     self.canMoveDown = function () {
-        return globalGameModel.nextActions()[globalGameModel.nextActions().length - 1] != self;
+        var last = globalGameModel.nextActions()[globalGameModel.nextActions().length - 1]
+        if(last != self) {
+            var may = false;
+            globalGameModel.nextActions().forEach((elem)=>{
+                if(elem instanceof ActionList)
+                {
+                    may = may || elem.mayMoveDown(self);
+                }
+            })
+        };
+        return may;
     }
 
     self.moveUp = function () {
         var na = globalGameModel.nextActions;
         let pos = na.indexOf(self);
-        na.splice(pos, 1, na()[pos - 1]);
-        na.splice(pos - 1, 1, self);
-
+        if(pos > 0)
+        {
+            na.splice(pos, 1, na()[pos - 1]);
+            na.splice(pos - 1, 1, self);
+            return;
+        }
+        else
+        {
+            globalGameModel.nextActions().forEach((action)=>{
+                if(action instanceof ActionList)
+                {
+                    action.doMoveUp(self);
+                }
+            })
+        }
     }
 
     self.moveDown = function () {
         var na = globalGameModel.nextActions;
         let pos = na.indexOf(self);
-        na.splice(pos, 1, na()[pos + 1]);
-        na.splice(pos + 1, 1, self);
+        if(pos > -1)
+        {
+            na.splice(pos, 1, na()[pos + 1]);
+            na.splice(pos + 1, 1, self);
+        }
+        else
+        {
+            globalGameModel.nextActions().forEach((action)=>{
+                if(action instanceof ActionList)
+                {
+                    action.doMoveDown(self);
+                }
+            })
+        }
     }
 
     self.decrementAmount = function () {
@@ -241,6 +316,11 @@ function Action(baseAction, amount) {
         self.tick();
     }
 
+    self.isCurrentValidAction = function()
+    {
+        return globalGameModel.isCurrentValidAction(self)
+    }
+
     self.handleOverflow = function () {
         if (self.currentTick() >= self.duration()) {
             self.currentTick(0);
@@ -248,4 +328,5 @@ function Action(baseAction, amount) {
             obs.increment(self.currentAmount)
         }
     }
+}
 }

@@ -122,78 +122,122 @@ class BaseAction {
  * @param {BaseAction} baseAction
  * @param {number} amount
  */
-function Action(baseAction, amount) {
-    /** @type {Action}*/
-    var self = this;
-    self.name = baseAction.name;
-    self.description = baseAction.description;
-    self.duration = baseAction.duration;
-    self._internals = baseAction._internals;
-    self._defaults = baseAction._defaults;
-    self.finish = baseAction.finish;
-    self.tick = baseAction.tick;
-    self.visible = baseAction.visible;
-    self.clickable = baseAction.clickable;
-    self.tickMultiplier = baseAction.tickMultiplier;
-    self.stats = baseAction.stats;
-    /** @type {number} ko.observable*/
-    self.maxAmount = ko.observable(amount);
-    /** @type {number} ko.observable*/
-    self.currentTick = ko.observable(0);
-    /** @type {number} ko.observable*/
-    self.currentAmount = ko.observable(0);
-    /** @type {boolean} ko.observable*/
-    self.failed = ko.observable(false);
-    self.reset = () => {
-        self.currentTick(0);
-        self.currentAmount(0);
-        self.failed(false);
-    };
-    self.getStaticObject = () => {
-        return {
-            name: self.name,
-            amount: self.maxAmount(),
-        };
-    };
-    self.canMoveUp = function () {
-        return globalGameModel.nextActions()[0] != self;
-    };
-    self.canMoveDown = function () {
-        return globalGameModel.nextActions()[globalGameModel.nextActions().length - 1] != self;
-    };
-    self.moveUp = function () {
-        var na = globalGameModel.nextActions;
-        let pos = na.indexOf(self);
-        na.splice(pos, 1, na()[pos - 1]);
-        na.splice(pos - 1, 1, self);
-    };
-    self.moveDown = function () {
-        var na = globalGameModel.nextActions;
-        let pos = na.indexOf(self);
-        na.splice(pos, 1, na()[pos + 1]);
-        na.splice(pos + 1, 1, self);
-    };
-    self.decrementAmount = function () {
-        obs.increment(self.maxAmount, -1);
-    };
-    self.incrementAmount = function () {
-        obs.increment(self.maxAmount, 1);
-    };
-    self.done = function () {
-        return self.currentAmount() >= self.maxAmount();
-    };
-    self.copy = function () {
-        return new Action(baseAction, self.maxAmount());
-    };
-    self.doTick = function () {
-        obs.increment(self.currentTick, self.tickMultiplier());
-        self.tick();
-    };
-    self.handleOverflow = function () {
-        if (self.currentTick() >= self.duration()) {
+class Action {
+    constructor(baseAction, amount) {
+        /** @type {Action}*/
+        var self = this;
+        self.name = baseAction.name;
+        self.description = baseAction.description;
+        self.duration = baseAction.duration;
+        self._internals = baseAction._internals;
+        self._defaults = baseAction._defaults;
+        self.finish = baseAction.finish;
+        self.tick = baseAction.tick;
+        self.visible = baseAction.visible;
+        self.clickable = baseAction.clickable;
+        self.tickMultiplier = baseAction.tickMultiplier;
+        self.stats = baseAction.stats;
+        /** @type {number} ko.observable*/
+        self.maxAmount = ko.observable(amount);
+        /** @type {number} ko.observable*/
+        self.currentTick = ko.observable(0);
+        /** @type {number} ko.observable*/
+        self.currentAmount = ko.observable(0);
+        /** @type {boolean} ko.observable*/
+        self.failed = ko.observable(false);
+        self.reset = () => {
             self.currentTick(0);
-            self.finish();
-            obs.increment(self.currentAmount);
-        }
-    };
+            self.currentAmount(0);
+            self.failed(false);
+        };
+        self.getStaticObject = () => {
+            return {
+                name: self.name,
+                amount: self.maxAmount(),
+            };
+        };
+        self.canMoveUp = function () {
+            var first = globalGameModel.nextActions()[0];
+            if (first != self) {
+                var may = false;
+                globalGameModel.nextActions().forEach((elem) => {
+                    if (elem instanceof ActionList) {
+                        may = may || elem.mayMoveUp(self);
+                    }
+                });
+            }
+            ;
+            return may;
+        };
+        self.canMoveDown = function () {
+            var last = globalGameModel.nextActions()[globalGameModel.nextActions().length - 1];
+            if (last != self) {
+                var may = false;
+                globalGameModel.nextActions().forEach((elem) => {
+                    if (elem instanceof ActionList) {
+                        may = may || elem.mayMoveDown(self);
+                    }
+                });
+            }
+            ;
+            return may;
+        };
+        self.moveUp = function () {
+            var na = globalGameModel.nextActions;
+            let pos = na.indexOf(self);
+            if (pos > 0) {
+                na.splice(pos, 1, na()[pos - 1]);
+                na.splice(pos - 1, 1, self);
+                return;
+            }
+            else {
+                globalGameModel.nextActions().forEach((action) => {
+                    if (action instanceof ActionList) {
+                        action.doMoveUp(self);
+                    }
+                });
+            }
+        };
+        self.moveDown = function () {
+            var na = globalGameModel.nextActions;
+            let pos = na.indexOf(self);
+            if (pos > -1) {
+                na.splice(pos, 1, na()[pos + 1]);
+                na.splice(pos + 1, 1, self);
+            }
+            else {
+                globalGameModel.nextActions().forEach((action) => {
+                    if (action instanceof ActionList) {
+                        action.doMoveDown(self);
+                    }
+                });
+            }
+        };
+        self.decrementAmount = function () {
+            obs.increment(self.maxAmount, -1);
+        };
+        self.incrementAmount = function () {
+            obs.increment(self.maxAmount, 1);
+        };
+        self.done = function () {
+            return self.currentAmount() >= self.maxAmount();
+        };
+        self.copy = function () {
+            return new Action(baseAction, self.maxAmount());
+        };
+        self.doTick = function () {
+            obs.increment(self.currentTick, self.tickMultiplier());
+            self.tick();
+        };
+        self.isCurrentValidAction = function () {
+            return globalGameModel.isCurrentValidAction(self);
+        };
+        self.handleOverflow = function () {
+            if (self.currentTick() >= self.duration()) {
+                self.currentTick(0);
+                self.finish();
+                obs.increment(self.currentAmount);
+            }
+        };
+    }
 }
