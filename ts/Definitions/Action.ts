@@ -142,6 +142,12 @@ class BaseAction {
         };
 
         self.addToPool = function () {
+            var maybeInsertHere = globalGameModel.nextActionsInsertPoint()
+            if(maybeInsertHere && maybeInsertHere instanceof ActionList)
+            {
+                maybeInsertHere.actions.push(new Action(this, 1))
+                return;
+            }
             globalGameModel.nextActions.push(new Action(this, 1));
         };
 
@@ -237,6 +243,10 @@ class Action{
                 {
                     may = may || elem.mayMoveUp(self);
                 }
+                if(elem == self)
+                {
+                    may = true;
+                }
             })
         };
         return may;
@@ -250,6 +260,10 @@ class Action{
                 if(elem instanceof ActionList)
                 {
                     may = may || elem.mayMoveDown(self);
+                }
+                if(elem == self)
+                {
+                    may = true;
                 }
             })
         };

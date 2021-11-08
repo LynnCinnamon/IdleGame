@@ -19,7 +19,9 @@
 <script type="text/html" id="Action-List-Template">
     <!-- ko if: typeof(collapsed) === "function" -->
     <div class="action-list-card">
-        Test
+        <input type="text" data-bind="value: name" placeholder="Name"><br>
+        Collapse list: <input type="checkbox" data-bind="checked: collapsed"><br>
+        Insert here: <input type="checkbox" data-bind="checked: $root.nextActionsInsertPoint() == $data, click: $root.setInsertPoint">
         <div class="noselect clickable square-20" data-bind="visible: canMoveUp(), click: moveUp">
             Λ
         </div>

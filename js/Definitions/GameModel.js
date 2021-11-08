@@ -16,6 +16,7 @@ class GameModel {
         self.currentActions = ko.observableArray([]);
         self.actionPointer = 0;
         self.unlockables = ko.observableArray([]);
+        self.nextActionsInsertPoint = ko.observable();
         self.isCurrentValidAction = function (action) {
             var name = action.name;
             var town = self.world.towns[this.currentTownPlayerPawn];
@@ -26,6 +27,14 @@ class GameModel {
                 allTowns["A small village"],
                 allTowns["The tavern"],
             ],
+        };
+        self.setInsertPoint = function (data) {
+            if (data == self.nextActionsInsertPoint()) {
+                self.nextActionsInsertPoint(undefined);
+                return true;
+            }
+            self.nextActionsInsertPoint(data);
+            return true;
         };
         self.stopped = ko.observable(true);
         self.longerStopped = ko.observable(false);

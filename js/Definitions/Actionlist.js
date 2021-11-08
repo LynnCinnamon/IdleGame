@@ -3,6 +3,7 @@ class ActionList {
         var self = this;
         self.actions = ko.observableArray([]);
         self.actionPointer = 0;
+        self.name = ko.observable("");
         self.collapsed = ko.observable(false);
         self.currentAmount = ko.observable(0);
         self.failed = ko.observable(false);
@@ -170,6 +171,7 @@ class ActionList {
             self.actions().forEach((action) => {
                 AL.actions.push(action.copy());
             });
+            AL.name(self.name());
             return AL;
         };
         self.getStaticObject = () => {
@@ -178,7 +180,7 @@ class ActionList {
                 array.push(item.getStaticObject());
             });
             return {
-                name: self.name,
+                name: self.name(),
                 amount: self.maxAmount(),
                 children: array
             };

@@ -113,6 +113,11 @@ class BaseAction {
             return self;
         };
         self.addToPool = function () {
+            var maybeInsertHere = globalGameModel.nextActionsInsertPoint();
+            if (maybeInsertHere && maybeInsertHere instanceof ActionList) {
+                maybeInsertHere.actions.push(new Action(this, 1));
+                return;
+            }
             globalGameModel.nextActions.push(new Action(this, 1));
         };
         allActions[self.name] = self;
@@ -164,6 +169,9 @@ class Action {
                     if (elem instanceof ActionList) {
                         may = may || elem.mayMoveUp(self);
                     }
+                    if (elem == self) {
+                        may = true;
+                    }
                 });
             }
             ;
@@ -176,6 +184,9 @@ class Action {
                 globalGameModel.nextActions().forEach((elem) => {
                     if (elem instanceof ActionList) {
                         may = may || elem.mayMoveDown(self);
+                    }
+                    if (elem == self) {
+                        may = true;
                     }
                 });
             }

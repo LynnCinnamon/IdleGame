@@ -26,7 +26,7 @@ class ActionList {
     tickMultiplier: () => number;
     copy: () => ActionList;
     getStaticObject: () => { name: any; amount: any; children: any[]; };
-    name: any;
+    name: KnockoutObservable<string>;
     isCurrentValidAction: () => boolean;
     includesAction: (action: Action | ActionList) => boolean;
     mayMoveDown: (action: Action | ActionList) => boolean;
@@ -40,7 +40,7 @@ class ActionList {
         var self = this;
         self.actions = ko.observableArray([]);
         self.actionPointer = 0;
-
+        self.name = ko.observable("")
         self.collapsed = ko.observable(false);
 
         self.currentAmount = ko.observable(0);
@@ -227,6 +227,7 @@ class ActionList {
             self.actions().forEach((action) => {
                 AL.actions.push(action.copy());
             });
+            AL.name(self.name());
             return AL;
         };
 
@@ -236,7 +237,7 @@ class ActionList {
                 array.push(item.getStaticObject());
             });
             return {
-                name: self.name,
+                name: self.name(),
                 amount: self.maxAmount(),
                 children: array
             };

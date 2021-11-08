@@ -13,7 +13,7 @@
 <script type="text/html" id="Current-Action-List-Template">
     <!-- ko if: typeof(collapsed) === "function" -->
     <div class="action-list-card">
-        Test
+        <div data-bind="text: name"></div>
         <div data-bind="visible: !collapsed(),template: { name: 'Current-Action-List-Template',  foreach: actions }">
 
         </div>

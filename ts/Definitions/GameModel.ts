@@ -44,6 +44,8 @@ class GameModel {
     stop: { (): void; (): void; }
     unlock: Function
     _tick: { (): void; (): void; }
+    nextActionsInsertPoint: KnockoutObservable<ActionList>;
+    setInsertPoint: (data: any) => any;
     constructor() {
         var self = this;
 
@@ -67,6 +69,7 @@ class GameModel {
 
         self.unlockables = ko.observableArray([]);
 
+        self.nextActionsInsertPoint = ko.observable();
 
         self.isCurrentValidAction = function (action: Action|ActionList) {
             var name = action.name;
@@ -81,6 +84,15 @@ class GameModel {
             ],
         };
 
+        self.setInsertPoint = function(data:ActionList) {
+            if(data == self.nextActionsInsertPoint())
+            {
+                self.nextActionsInsertPoint(undefined)
+                return true;
+            }
+            self.nextActionsInsertPoint(data)
+            return true;
+        }
 
         self.stopped = ko.observable(true);
         self.longerStopped = ko.observable(false);
