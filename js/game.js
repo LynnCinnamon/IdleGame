@@ -46,6 +46,9 @@ function serializeData(givenArray) {
 function debugLog(obj) {
     //console.log(obj);
 }
+function isSaveGameActionList(element) {
+    return element.actions !== undefined;
+}
 var saveGameManager = {
     generateItemsSaveObject: (items) => {
         var array = [];
@@ -114,6 +117,12 @@ var saveGameManager = {
         globalGameModel.nextActions.removeAll();
         saveGame.nextActions.forEach((action) => {
             debugLog("Adding Action '" + action.name + "' (" + action.amount + "x)");
+            if (isSaveGameActionList(action)) {
+                var actionList = new ActionList();
+                actionList.addSerializedData(action);
+                globalGameModel.nextActions.push(actionList);
+                return;
+            }
             globalGameModel.nextActions.push(new Action(allActions[action.name], action.amount));
         });
         saveGame.towns.forEach((town) => {

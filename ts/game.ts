@@ -65,6 +65,15 @@ function debugLog(obj)
     //console.log(obj);
 }
 
+
+function isSaveGameActionList(element: SaveGameAction | SaveGameActionList): element is SaveGameActionList {
+    return (<SaveGameActionList>element).actions !== undefined;
+ }
+type SaveGameActionList = {
+    name:string,
+    amount:number,
+    actions: (SaveGameAction|SaveGameActionList)[]
+}
 type SaveGameAction = {
     name:string,
     amount:number,
@@ -99,7 +108,7 @@ type SaveGame = {
     saveTime:number,
     bankedTicks:number,
     stats:SaveGameStat[],
-    nextActions:SaveGameAction[],
+    nextActions:SaveGameAction[] | SaveGameActionList[],
     towns:SaveGameTown[],
 }
 
@@ -174,6 +183,13 @@ var saveGameManager = {
         globalGameModel.nextActions.removeAll();
         saveGame.nextActions.forEach((action) => {
             debugLog("Adding Action '" + action.name + "' (" + action.amount + "x)")
+            if(isSaveGameActionList(action))
+            {
+                var actionList = new ActionList()
+                actionList.addSerializedData(action)
+                globalGameModel.nextActions.push(actionList);
+                return;
+            }
             globalGameModel.nextActions.push(new Action(allActions[action.name], action.amount))
         })
         saveGame.towns.forEach((town)=>{

@@ -22,6 +22,19 @@ class ActionList {
                 });
             }
         };
+        self.addSerializedData = function (data) {
+            self.name(data.name);
+            data.actions.forEach((action) => {
+                debugLog("Adding SaveGameActionList Action '" + action.name + "' (" + action.amount + "x)");
+                if (isSaveGameActionList(action)) {
+                    var actionList = new ActionList();
+                    actionList.addSerializedData(action);
+                    self.actions.push(actionList);
+                    return;
+                }
+                self.actions.push(new Action(allActions[action.name], action.amount));
+            });
+        };
         self.doMoveUp = (action) => {
             var na = self.actions;
             let pos = na.indexOf(action);
@@ -182,7 +195,7 @@ class ActionList {
             return {
                 name: self.name(),
                 amount: self.maxAmount(),
-                children: array
+                actions: array
             };
         };
         self.includesAction = function (action) {

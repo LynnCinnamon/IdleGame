@@ -25,7 +25,7 @@ class ActionList {
     visible: () => boolean;
     tickMultiplier: () => number;
     copy: () => ActionList;
-    getStaticObject: () => { name: any; amount: any; children: any[]; };
+    getStaticObject: () => { name: any; amount: any; actions: any[]; };
     name: KnockoutObservable<string>;
     isCurrentValidAction: () => boolean;
     includesAction: (action: Action | ActionList) => boolean;
@@ -33,6 +33,7 @@ class ActionList {
     mayMoveUp: (action: Action | ActionList) => boolean;
     doMoveUp: (action: any) => void;
     doMoveDown;
+    addSerializedData
     constructor() {
 
 
@@ -64,6 +65,21 @@ class ActionList {
                     }
                 })
             }
+        }
+
+        self.addSerializedData= function(data: SaveGameActionList){
+            self.name(data.name);
+            data.actions.forEach((action) => {
+                debugLog("Adding SaveGameActionList Action '" + action.name + "' (" + action.amount + "x)")
+                if(isSaveGameActionList(action))
+                {
+                    var actionList = new ActionList()
+                    actionList.addSerializedData(action)
+                    self.actions.push(actionList)
+                    return;
+                }
+                self.actions.push(new Action(allActions[action.name], action.amount))
+            })
         }
 
         self.doMoveUp = (action)=>{
@@ -239,7 +255,7 @@ class ActionList {
             return {
                 name: self.name(),
                 amount: self.maxAmount(),
-                children: array
+                actions: array
             };
         };
 
