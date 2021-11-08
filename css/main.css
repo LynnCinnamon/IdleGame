@@ -63,6 +63,19 @@ html, body
     margin-bottom: 10px;
     overflow: hidden;
     position: relative;
+    border: 1px solid black;
+}
+
+.action-list-card
+{
+    background-color: bisque;
+    padding: 10px;
+    width: 260px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    position: relative;
+    border: 1px solid black;
+    overflow: auto;
 }
 
 .block-container {

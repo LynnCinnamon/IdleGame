@@ -1,9 +1,4 @@
-<b>Current Actions</b>
-<div class="flex">
-    Repeat last action on list: <input type="checkbox" data-bind="checked: repeatLastAction">
-    Keep current Actions list: <input type="checkbox" data-bind="checked: keepCurrentActions">
-</div>
-<div class="scrollable" data-bind="foreach: currentActions()">
+<script type="text/html" id="Current-Action-Template">
     <div class="action-card" data-bind="visible: maxAmount() > 0">
         <div data-bind="text: name + ' (' + currentAmount() + ')'"></div>
         <div class="progress short">
@@ -13,4 +8,28 @@
             <div class="progress-value" data-bind="style: { width: (currentAmount() * 100 / maxAmount()) + '%'}"></div>
         </div>
     </div>
+</script>
+
+<script type="text/html" id="Current-Action-List-Template">
+    <!-- ko if: typeof(collapsed) === "function" -->
+    <div class="action-list-card">
+        Test
+        <div data-bind="visible: !collapsed(),template: { name: 'Current-Action-List-Template',  foreach: actions }">
+
+        </div>
+    </div>
+    <!-- /ko -->
+    <!-- ko ifnot: typeof(collapsed) === "function" -->
+        <div data-bind="template: { name: 'Current-Action-Template'}">
+
+        </div>
+    <!-- /ko -->
+</script>
+
+
+<b>Current Actions</b>
+<div class="flex">
+    Repeat last action on list: <input type="checkbox" data-bind="checked: repeatLastAction">
+    Keep current Actions list: <input type="checkbox" data-bind="checked: keepCurrentActions">
 </div>
+<div class="scrollable" data-bind="template: { name: 'Current-Action-List-Template', foreach: currentActions()}"></div>

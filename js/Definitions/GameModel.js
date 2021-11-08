@@ -219,6 +219,11 @@ function GameModel() {
         self.nextActions.removeAll()
     }
 
+    self.insertActionList = function()
+    {
+        self.nextActions.push(new ActionList())
+    }
+
     //The main gameloop.
     self._tick = function () {
         self.unlockUnlockables();

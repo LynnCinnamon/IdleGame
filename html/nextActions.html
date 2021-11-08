@@ -1,6 +1,4 @@
-<b>Next Actions</b><br> 
-<button data-bind="click: clearNextActions"> Clear List</button>
-<div class="scrollable" data-bind="foreach: nextActions()">
+<script type="text/html" id="Action-Template">
     <div class="action-card">
         <div class="block-container">
             <div data-bind="text: name" style="margin-right: 10px;"></div>
@@ -16,4 +14,32 @@
         </div>
         <div class="delete" data-bind="click: $root.removeNextAction">X</div>
     </div>
+</script>
+
+<script type="text/html" id="Action-List-Template">
+    <!-- ko if: typeof(collapsed) === "function" -->
+    <div class="action-list-card">
+        Test
+        <div class="noselect clickable square-20" data-bind="visible: canMoveUp(), click: moveUp">
+            Λ
+        </div>
+        <div class="noselect clickable square-20" data-bind="visible: canMoveDown(), click: moveDown">
+            V
+        </div>
+        <div data-bind="visible: !collapsed(),template: { name: 'Action-List-Template',  foreach: actions }">
+
+        </div>
+        <div class="delete" data-bind="click: $root.removeNextAction">X</div>
+    </div>
+    <!-- /ko -->
+    <!-- ko ifnot: typeof(collapsed) === "function" -->
+        <div data-bind="template: { name: 'Action-Template'}">
+
+        </div>
+    <!-- /ko -->
+</script>
+<b>Next Actions</b><br>
+<button data-bind="click: clearNextActions"> Clear List</button>
+<button data-bind="click: insertActionList"> Insert Action List</button>
+<div class="scrollable" data-bind="template: { name: 'Action-List-Template', foreach: nextActions()}">
 </div>
