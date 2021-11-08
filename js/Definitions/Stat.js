@@ -1,5 +1,5 @@
 /// <reference path="../../node_modules/@types/knockout/index.d.ts" />
-/// <reference path="../jsUtils.js" />
+/// <reference path="../jsUtils.ts" />
 var allStats = {};
 class Stat {
     constructor(name, flavourText) {

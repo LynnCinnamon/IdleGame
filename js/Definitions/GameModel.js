@@ -1,5 +1,5 @@
 /// <reference path="../../node_modules/@types/knockout/index.d.ts" />
-/// <reference path="../game.js" />
+/// <reference path="../game.ts" />
 class GameModel {
     constructor() {
         var self = this;

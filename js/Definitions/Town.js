@@ -1,5 +1,5 @@
 /// <reference path="../../node_modules/@types/knockout/index.d.ts" />
-/// <reference path="../Definitions/Action.js" />
+/// <reference path="./Action.ts" />
 var allTowns = {};
 class Town {
     constructor(name, actionNames, progressNames) {

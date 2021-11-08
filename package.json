@@ -1,5 +1,8 @@
 {
   "dependencies": {
     "@types/knockout": "^3.4.71"
+  },
+  "devDependencies": {
+    "@types/jquery": "^3.5.8"
   }
 }
