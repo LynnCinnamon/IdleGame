@@ -1,46 +1,86 @@
+
 class ActionList {
+    actions: KnockoutObservableArray<any>;
+    actionPointer: number;
+    collapsed: KnockoutObservable<boolean>;
+    currentAmount: KnockoutObservable<number>;
+    failed: KnockoutObservable<boolean>;
+    maxAmount: () => any;
+    canMoveUp: () => boolean;
+    canMoveDown: () => boolean;
+    hasAction: (action: any) => any;
+    removeAction: (action: any) => void;
+    moveUp: () => void;
+    moveDown: () => void;
+    duration: () => any;
+    currentTick: KnockoutComputed<any>;
+    finish: () => void;
+    tick: () => void;
+    reset: () => void;
+    doTick: () => void;
+    player: any;
+    failedThisLoop: boolean;
+    handleOverflow: () => void;
+    done: () => boolean;
+    visible: () => boolean;
+    tickMultiplier: () => number;
+    copy: () => ActionList;
+    getStaticObject: () => { name: any; amount: any; children: any[]; };
+    name: any;
     constructor() {
         /** @type {ActionList}*/
         var self = this;
         /**@type {Action[]} observable*/
         self.actions = ko.observableArray([]);
         self.actionPointer = 0;
+
         self.collapsed = ko.observable(false);
+
         /** @type {number} ko.observable*/
         self.currentAmount = ko.observable(0);
+
         /** @type {boolean} ko.observable*/
         self.failed = ko.observable(false);
+
         /** @returns {number} */
         self.maxAmount = () => {
             return self.actions().reduce((tally, current) => { return tally + current.maxAmount(); }, 0);
         };
+
         self.canMoveUp = function () {
             return globalGameModel.nextActions()[0] != self;
         };
+
         self.canMoveDown = function () {
             return globalGameModel.nextActions()[globalGameModel.nextActions().length - 1] != self;
         };
+
         self.hasAction = function (action) {
             return self.actions().reduce((tally, current) => { return tally || current == action || current.hasAction(action); }, false);
         };
+
         self.removeAction = function (action) {
             var index = self.actions.indexOf(action);
             if (index > -1) {
                 self.actions.splice(index, 1);
             }
         };
+
         self.moveUp = function () {
             var na = globalGameModel.nextActions;
             let pos = na.indexOf(self);
             na.splice(pos, 1, na()[pos - 1]);
             na.splice(pos - 1, 1, self);
+
         };
+
         self.moveDown = function () {
             var na = globalGameModel.nextActions;
             let pos = na.indexOf(self);
             na.splice(pos, 1, na()[pos + 1]);
             na.splice(pos + 1, 1, self);
         };
+
         /** @returns {number} */
         self.duration = () => {
             return self.actions().reduce((tally, current) => { return tally + current.duration(); }, 0);
@@ -89,6 +129,7 @@ class ActionList {
         };
         self.visible = () => { return true; };
         self.tickMultiplier = () => { return 1; };
+
         self.copy = () => {
             var AL = new ActionList();
             self.actions().forEach((action) => {
@@ -96,6 +137,7 @@ class ActionList {
             });
             return AL;
         };
+
         self.getStaticObject = () => {
             var array = [];
             self.actions().forEach((item) => {
@@ -107,8 +149,9 @@ class ActionList {
                 children: array
             };
         };
+
     }
-    isCurrentValidAction(elem) {
+    isCurrentValidAction(elem: any): boolean {
         throw new Error("Method not implemented.");
     }
 }

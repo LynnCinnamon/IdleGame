@@ -1,7 +1,7 @@
 /// <reference path="../../node_modules/@types/knockout/index.d.ts" />
-/// <reference path="./Stat.ts" />
-class Player {
-    constructor() {
+/// <reference path="../Definitions/Stat.js" />
+var Player = /** @class */ (function () {
+    function Player() {
         /** @type {Stat[]} ko.observable*/
         this.stats = ko.observableArray([
             allStats["Dexterity"],
@@ -19,9 +19,10 @@ class Player {
         this.currentTicks = ko.observable(this.startTicks);
         this.money = ko.observable(0);
     }
-    reset() {
+    Player.prototype.reset = function () {
         this.maxTicks(this.startTicks);
         this.currentTicks(this.startTicks);
         this.money(0);
-    }
-}
+    };
+    return Player;
+}());
